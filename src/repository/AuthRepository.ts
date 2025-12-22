@@ -1,3 +1,4 @@
+import { verify } from "crypto";
 import apiClient from "./index";
 import type {
   LoginRequest,
@@ -20,6 +21,9 @@ const RESET_PASSWORD = `${AUTH_BASE}/reset-password`;
 export default {
   signup(payload: SignupRequest) {
     return apiClient.post<AuthResponse>(SIGNUP, payload);
+  },
+  verifyEmail(payload: { token: string }) {
+    return apiClient.post<ApiResponse>(`${AUTH_BASE}/verify-email`, payload);
   },
 
   login(payload: LoginRequest) {
