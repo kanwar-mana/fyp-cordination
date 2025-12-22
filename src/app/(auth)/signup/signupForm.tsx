@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
+import { signup } from "@/store/auth/authThunk";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { login } from "@/store/auth/authThunk";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import {
@@ -17,29 +17,49 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import TabNavigation from "@/components/TabNavigation";
 
-export default function LoginPage() {
+export default function SignupForm({
+  setIsVerificationCodeSent,
+  setUserEmail,
+}: any) {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
+  const [fullName, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState<"student" | "superviser" | "coordinator">(
+    "student"
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<any | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    await dispatch(login({ email, password }))
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
+    }
+    const payload = { fullName, email, password, role };
+    await dispatch(signup(payload))
       .unwrap()
-      .then(() => {
-        router.push("/dashboard");
-      })
-      .catch((err: any) => {
-        setError(err.message || "Login failed. Please try again.");
+      .then((res) => {
+        setUserEmail(res?.data?.email || email);
+        setIsVerificationCodeSent(true);
+        router.replace("/signup?step=verify-account");
       })
       .finally(() => {
         setIsLoading(false);
@@ -47,20 +67,43 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-background">
+    <div className="flex items-center justify-center w-full">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to FYP Coordination System</CardDescription>
+          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+          <CardDescription>Join the FYP Coordination System</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
+                {error?.message}
               </div>
             )}
-            <div className="space-y-2 ">
+            <TabNavigation
+              defaultValue="student"
+              tabs={[
+                { value: "student", label: "Student" },
+                { value: "superviser", label: "Superviser" },
+                { value: "coordinator", label: "Coordinator" },
+              ]}
+              onValueChange={(value) =>
+                setRole(value as "student" | "superviser" | "coordinator")
+              }
+            />
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={fullName}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -102,15 +145,27 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 mt-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Creating account..." : "Create Account"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                Sign in
               </Link>
             </p>
           </CardFooter>
