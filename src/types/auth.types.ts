@@ -14,9 +14,13 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
+export interface verifyEmailRequest {
+  email: string;
+  code: string;
+}
 
 export interface SignupRequest {
-  name: string;
+  fullName: string;
   email: string;
   password: string;
   role?: "student" | "superviser" | "coordinator";
