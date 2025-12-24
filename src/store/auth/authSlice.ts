@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { User } from "@/types/auth.types";
-import { login, logout } from "./authThunk";
+import { checkAuth, login, logout } from "./authThunk";
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -18,8 +18,12 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(login.fulfilled, (state, action) => {
-        state.user = action.payload;
+        state.user = action.payload.user;
         state.isAuthenticated = true;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.isAuthenticated = Boolean(action.payload.user);
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
