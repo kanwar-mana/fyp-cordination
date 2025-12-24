@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const baseDomain = "http://localhost:5000/api";
-const baseURL = `${baseDomain}`;
+const baseDomain =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
 
 const apiClient = axios.create({
-  baseURL,
+  baseURL: baseDomain,
   headers: {
     "Content-Type": "application/json",
   },

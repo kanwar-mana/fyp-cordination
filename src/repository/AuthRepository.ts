@@ -15,6 +15,8 @@ const AUTH_BASE = "/auth";
 const SIGNUP = `${AUTH_BASE}/signup`;
 const LOGIN = `${AUTH_BASE}/login`;
 const LOGOUT = `${AUTH_BASE}/logout`;
+const ME = `${AUTH_BASE}/me`;
+const REFRESH = `${AUTH_BASE}/refresh`;
 const FORGOT_PASSWORD = `${AUTH_BASE}/forgot-password`;
 const RESET_PASSWORD = `${AUTH_BASE}/reset-password`;
 
@@ -24,6 +26,14 @@ export default {
   },
   verifyEmail(payload: { token: string }) {
     return apiClient.post<ApiResponse>(`${AUTH_BASE}/verify-email`, payload);
+  },
+
+  me() {
+    return apiClient.get<ApiResponse<{ user: User }>>(ME);
+  },
+
+  refresh() {
+    return apiClient.post<ApiResponse<AuthResponse>>(REFRESH);
   },
 
   login(payload: LoginRequest) {
