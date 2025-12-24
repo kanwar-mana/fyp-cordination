@@ -4,8 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ReduxProvider } from "@/store/provider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { AuthInitializer } from "@/components/auth/AuthInitializer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,9 +33,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReduxProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <AuthInitializer />
+            {children}
           </ReduxProvider>
         </ThemeProvider>
         <Toaster />
