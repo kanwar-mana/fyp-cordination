@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { User } from "@/types/auth.types";
 import { checkAuth, login, logout } from "./authThunk";
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -26,6 +27,11 @@ const authSlice = createSlice({
         state.isAuthenticated = Boolean(action.payload.user);
       })
       .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(logout.rejected, (state) => {
+        // Even if logout fails on server, clear local state
         state.user = null;
         state.isAuthenticated = false;
       });

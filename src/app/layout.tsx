@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { ReduxProvider } from "@/store/provider";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { AuthInitializer } from "@/components/auth/AuthInitializer";
+import { Providers } from "@/components/providers/Providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,17 +24,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased flex min-h-screen flex-col`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ReduxProvider>
-            <AuthInitializer />
-            {children}
-          </ReduxProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
         <Toaster />
       </body>
     </html>

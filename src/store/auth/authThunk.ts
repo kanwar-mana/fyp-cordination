@@ -61,45 +61,59 @@ export const login = createAsyncThunk(
   async (payload: LoginRequest, thunkAPI) => {
     try {
       const response = await auth.login(payload);
+      
+      // Backend should set httpOnly cookies for tokens
+      // We only need to store user data in Redux
+      const { user } = response.data.data || response.data;
+      
+      if (!user) {
+        throw new Error("Invalid response: user data not found");
+      }
+
       toast({
         title: "Success!",
         description: response.data.message || "Login successful!",
       });
 
-      const { user, accessToken, refreshToken } = response.data.data || {};
-      return { user, accessToken, refreshToken };
+      return { user };
     } catch (error: any) {
-      console.log("Login error:", error);
+      const errorMessage =
+        error?.response?.data?.message || 
+        error.message ||
+        "Login failed. Please try again.";
+      
       toast({
-        title: "Error",
-        description:
-          error?.response?.data?.message || "Login failed. Please try again.",
+        title: "Login Failed",
+        description: errorMessage,
         variant: "destructive",
       });
-      return thunkAPI.rejectWithValue(error?.response?.data);
+      
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
 
 export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
   try {
-    const response = await auth.logout();
+    await auth.logout();
+    
     toast({
       title: "Success!",
-      description: response.data.message || "Logout successful!",
+      description: "Logged out successfully.",
     });
-    return response.data;
-  } catch (error) {
-    console.log("Logout error:", error);
-    const axiosError = error as any;
+    
+    return {};
+  } catch (error: any) {
+    // Even if the API call fails, we should clear local state
+    console.error("Logout error:", error);
+    
     toast({
-      title: "Error",
-      description:
-        axiosError?.response?.data?.message ||
-        "Logout failed. Please try again.",
-      variant: "destructive",
+      title: "Logged Out",
+      description: "You have been logged out.",
     });
-    return thunkAPI.rejectWithValue(axiosError?.response?.data);
+    
+    // Don't reject, always clear the state
+    return {};
   }
 });
 
@@ -110,21 +124,19 @@ export const checkAuth = createAsyncThunk("auth/check", async (_, thunkAPI) => {
   } catch (error: any) {
     const status = error?.response?.status;
 
+    // Try to refresh token if 401/403
     if (status === 401 || status === 403) {
       try {
-        await auth.refresh(); // only refreshes cookie
-
+        await auth.refresh();
         const meRes = await auth.me();
         return { user: meRes.data.data.user };
       } catch (refreshError: any) {
-        return thunkAPI.rejectWithValue(
-          refreshError?.response?.data || "Session expired"
-        );
+        // Silently fail - user is not authenticated
+        return thunkAPI.rejectWithValue("Not authenticated");
       }
     }
 
-    return thunkAPI.rejectWithValue(
-      error?.response?.data || "Authentication failed"
-    );
+    // Silently fail for other errors
+    return thunkAPI.rejectWithValue("Authentication check failed");
   }
 });
