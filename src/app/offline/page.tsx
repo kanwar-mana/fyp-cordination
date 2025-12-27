@@ -1,4 +1,5 @@
 import { WifiOff } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,8 +35,8 @@ export default function OfflinePage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={() => window.location.reload()}>
-            Try Again
+          <Button asChild className="w-full">
+            <Link href="/">Go Home</Link>
           </Button>
         </CardFooter>
       </Card>
