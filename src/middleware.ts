@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
-  // 1. Added "/" to the matcher so the middleware triggers on the home page
+  // IMPORTANT: Added "/" to this list so the middleware sees the home page request
   matcher: ["/", "/dashboard/:path*", "/login", "/signup"],
 };
 
@@ -12,16 +12,26 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthenticated = accessToken || refreshToken;
 
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const isDashboard = pathname.startsWith("/dashboard");
-  const isRoot = pathname === "/";
+  // 1. Handle the Root Path "/"
+  if (pathname === "/") {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    } else {
+      // This changes the URL from "localhost:3000/" to "localhost:3000/login"
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
 
-  if (isAuthenticated && (isAuthPage || isRoot)) {
+  // 2. Prevent logged-in users from accessing Login/Signup pages
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  if (isAuthenticated && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (!isAuthenticated && (isDashboard || isRoot)) {
-    return NextResponse.rewrite(new URL("/login", request.url));
+  // 3. Prevent unauthenticated users from accessing Dashboard
+  const isDashboard = pathname.startsWith("/dashboard");
+  if (!isAuthenticated && isDashboard) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
