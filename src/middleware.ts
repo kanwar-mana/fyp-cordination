@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup", "/verify/:path*", "/"],
+  // 1. Added "/" to the matcher so the middleware triggers on the home page
+  matcher: ["/", "/dashboard/:path*", "/login", "/signup"],
 };
 
 export function middleware(request: NextRequest) {
@@ -9,27 +10,18 @@ export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
   const { pathname } = request.nextUrl;
+  const isAuthenticated = accessToken || refreshToken;
 
-  const isAuthPage =
-    pathname === "/login" ||
-    pathname === "/signup" ||
-    pathname.startsWith("/verify") ||
-    pathname === "/";
-
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
   const isDashboard = pathname.startsWith("/dashboard");
+  const isRoot = pathname === "/";
 
-  // ✅ logged-in users shouldn't see login/signup/home/verify
-  if ((accessToken || refreshToken) && isAuthPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+  if (isAuthenticated && (isAuthPage || isRoot)) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // ✅ not logged-in users cannot access dashboard
-  if (!accessToken && !refreshToken && isDashboard) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  if (!isAuthenticated && (isDashboard || isRoot)) {
+    return NextResponse.rewrite(new URL("/login", request.url));
   }
 
   return NextResponse.next();

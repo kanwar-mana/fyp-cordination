@@ -3,7 +3,6 @@
 import { ReactNode, useEffect } from "react";
 import { Provider } from "react-redux";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { PwaRegister } from "@/components/pwa/PwaRegister";
 import { store } from "@/store";
 
 interface ProvidersProps {
@@ -18,10 +17,7 @@ export function Providers({ children }: ProvidersProps) {
       enableSystem
       disableTransitionOnChange
     >
-      <Provider store={store}>
-        <PwaRegister />
-        {children}
-      </Provider>
+      <Provider store={store}>{children}</Provider>
     </ThemeProvider>
   );
 }
