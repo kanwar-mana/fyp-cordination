@@ -29,11 +29,6 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
-      })
-      .addCase(logout.rejected, (state) => {
-        // Even if logout fails on server, clear local state
-        state.user = null;
-        state.isAuthenticated = false;
       });
   },
 });

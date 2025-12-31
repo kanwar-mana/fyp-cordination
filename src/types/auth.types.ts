@@ -3,7 +3,7 @@ export interface User {
   _id: string;
   email: string;
   fullName: string;
-  role: "student" | "superviser" | "coordinator";
+  role: "student" | "supervisor" | "coordinator";
   avatar?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -23,7 +23,7 @@ export interface SignupRequest {
   fullName: string;
   email: string;
   password: string;
-  role?: "student" | "superviser" | "coordinator";
+  role?: "student" | "supervisor" | "coordinator";
 }
 
 export interface ForgotPasswordRequest {
@@ -64,6 +64,5 @@ export interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (data: ResetPasswordRequest) => Promise<void>;
-  clearError: () => void;
   checkAuth: () => Promise<void>;
 }

@@ -61,11 +61,11 @@ export const login = createAsyncThunk(
   async (payload: LoginRequest, thunkAPI) => {
     try {
       const response = await auth.login(payload);
-      
+
       // Backend should set httpOnly cookies for tokens
       // We only need to store user data in Redux
       const { user } = response.data.data || response.data;
-      
+
       if (!user) {
         throw new Error("Invalid response: user data not found");
       }
@@ -78,16 +78,16 @@ export const login = createAsyncThunk(
       return { user };
     } catch (error: any) {
       const errorMessage =
-        error?.response?.data?.message || 
+        error?.response?.data?.message ||
         error.message ||
         "Login failed. Please try again.";
-      
+
       toast({
         title: "Login Failed",
         description: errorMessage,
         variant: "destructive",
       });
-      
+
       return thunkAPI.rejectWithValue(errorMessage);
     }
   }
@@ -96,24 +96,22 @@ export const login = createAsyncThunk(
 export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
   try {
     await auth.logout();
-    
+
     toast({
       title: "Success!",
       description: "Logged out successfully.",
     });
-    
+
     return {};
   } catch (error: any) {
     // Even if the API call fails, we should clear local state
     console.error("Logout error:", error);
-    
+
     toast({
-      title: "Logged Out",
-      description: "You have been logged out.",
+      title: "Logout Failed",
+      description: "Logout failed. Please try again.",
+      variant: "destructive",
     });
-    
-    // Don't reject, always clear the state
-    return {};
   }
 });
 
