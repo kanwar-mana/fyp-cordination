@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -35,6 +36,7 @@ const formSchema = z.object({
 
 export default function OtpInput({ email, onVerification = () => {} }: any) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -49,7 +51,9 @@ export default function OtpInput({ email, onVerification = () => {} }: any) {
     setIsVerifying(true);
     await dispatch(verifyEmail(payload))
       .unwrap()
-      .then(() => onVerification())
+      .then(() => {
+        router.push("/login");
+      })
       .finally(() => setIsVerifying(false));
   }
 
