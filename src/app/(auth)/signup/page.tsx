@@ -11,7 +11,7 @@ export default function Page() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background max-w-full">
       {isVerificationCodeSent ? (
-        <OtpInput email={userEmail} onVerification={() => {}} />
+        <OtpInput email={userEmail} />
       ) : (
         <SignupForm
           setIsVerificationCodeSent={setIsVerificationCodeSent}

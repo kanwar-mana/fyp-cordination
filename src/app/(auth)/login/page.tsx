@@ -20,6 +20,7 @@ import {
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +34,7 @@ export default function LoginPage() {
     await dispatch(login({ email, password }))
       .unwrap()
       .then(() => {
-        redirect("/dashboard");
+        router.push("/dashboard");
       })
       .finally(() => {
         setIsLoading(false);
