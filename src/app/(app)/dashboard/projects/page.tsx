@@ -9,10 +9,8 @@ export default function DashboardPage() {
       {/* Add your dashboard content here */}
       <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold">Projects</h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            View and manage your projects
-          </p>
+          <h3 className="font-semibold"></h3>
+          <p className="text-sm text-muted-foreground mt-2"></p>
         </div>
         <div className="rounded-lg border bg-card p-6">
           <h3 className="font-semibold">Supervisors</h3>

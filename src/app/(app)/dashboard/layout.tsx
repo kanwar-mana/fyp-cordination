@@ -10,7 +10,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   const accessToken = (await cookies()).get("accessToken")?.value;
   const refreshToken = (await cookies()).get("refreshToken")?.value;
 
-  // ✅ block dashboard on server before rendering
   if (!accessToken && !refreshToken) {
     redirect("/login");
   }
