@@ -5,6 +5,7 @@ import { AppShell } from "./AppShell";
 import { checkAuth } from "@/store/auth/authThunk";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useEffect } from "react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 import {
   FileText,
   FolderGit2,
@@ -16,9 +17,9 @@ import {
 const studentNavItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/dashboard/projects", icon: FolderGit2 },
-  { label: "Submissions", href: "/submissions", icon: FileText },
-  { label: "Teams", href: "/teams", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Submissions", href: "/dashboard/submissions", icon: FileText },
+  { label: "Teams", href: "/dashboard/teams", icon: Users },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 const supervisorNavItems = [
@@ -56,7 +57,9 @@ export default function DashboardShell({
   }, [dispatch]);
   return (
     <SidebarProvider>
-      <AppShell navItems={navItems}>{children}</AppShell>
+      <AppShell navItems={navItems}>
+        <RouteGuard>{children}</RouteGuard>
+      </AppShell>
     </SidebarProvider>
   );
 }

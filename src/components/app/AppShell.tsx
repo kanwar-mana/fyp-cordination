@@ -48,11 +48,6 @@ export function AppShell({
   const dispatch = useAppDispatch();
   const { state } = useSidebar();
 
-  const handleLogout = async () => {
-    await dispatch(logout()).unwrap();
-    router.push("/login");
-  };
-
   return (
     <div className="flex min-h-screen w-full">
       <Sidebar collapsible="icon">
@@ -98,7 +93,7 @@ export function AppShell({
         </SidebarContent>
 
         <SidebarFooter>
-          {user && <NavUser user={user} />}
+          <NavUser user={user as any} />
         </SidebarFooter>
       </Sidebar>
 
