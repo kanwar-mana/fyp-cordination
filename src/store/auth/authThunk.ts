@@ -138,3 +138,51 @@ export const checkAuth = createAsyncThunk("auth/check", async (_, thunkAPI) => {
     return thunkAPI.rejectWithValue("Authentication check failed");
   }
 });
+
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async (payload: { email: string }, thunkAPI) => {
+    try {
+      const response = await auth.forgotPassword(payload);
+      return response.data;
+    } catch (error: any) {
+      console.log("Forgot password error:", error);
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.message ||
+          "Failed to send password reset link. Please try again.",
+        variant: "destructive",
+      });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (
+    payload: { email: string; token: string; newPassword: string },
+    thunkAPI
+  ) => {
+    try {
+      const response = await auth.resetPassword(payload);
+      toast({
+        title: "Success!",
+        description:
+          response.data.message ||
+          "Password reset successfully. You can now log in with your new password.",
+      });
+      return response.data;
+    } catch (error: any) {
+      console.log("Reset password error:", error);
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.message ||
+          "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
