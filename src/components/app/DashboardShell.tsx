@@ -26,7 +26,7 @@ const supervisorNavItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/dashboard/projects", icon: FolderGit2 },
   { label: "Students", href: "/dashboard/students", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 const coordinatorNavItems = [
@@ -34,7 +34,7 @@ const coordinatorNavItems = [
   { label: "Projects", href: "/dashboard/projects", icon: FolderGit2 },
   { label: "Supervisors", href: "/dashboard/supervisors", icon: Users },
   { label: "Students", href: "/dashboard/students", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function DashboardShell({

@@ -1,5 +1,5 @@
 "use client";
-import { Project } from "@/components/app/student/Project";
+import { Project } from "@/components/app/student/StudentProject";
 
 export default function DashboardPage() {
   return (
