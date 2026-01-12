@@ -20,6 +20,7 @@ import {
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +34,7 @@ export default function LoginPage() {
     await dispatch(login({ email, password }))
       .unwrap()
       .then(() => {
-        redirect("/dashboard");
+        router.push("/dashboard");
       })
       .finally(() => {
         setIsLoading(false);
@@ -62,7 +63,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"

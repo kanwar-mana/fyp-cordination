@@ -3,15 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  FolderGit2,
-  Settings,
-  LogOut,
-  User,
-} from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, User } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -32,38 +24,29 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NavUser } from "@/components/nav-user";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/store/auth/authThunk";
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Projects", href: "/dashboard/projects", icon: FolderGit2 },
-  { label: "Submissions", href: "/submissions", icon: FileText },
-  { label: "Teams", href: "/teams", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+interface NavItem {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+}
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  navItems,
+}: {
+  children: React.ReactNode;
+  navItems: NavItem[];
+}) {
   const { user } = useAppSelector((state) => state.auth);
 
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { state } = useSidebar();
-
-  const handleLogout = async () => {
-    await dispatch(logout()).unwrap();
-    router.push("/login");
-  };
 
   return (
     <div className="flex min-h-screen w-full">
@@ -109,66 +92,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarSeparator />
-
-        <SidebarFooter className="px-2 pb-4">
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center justify-center gap-2">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar} alt={user.fullName} />
-                    <AvatarFallback>
-                      {user.fullName.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  {state === "expanded" && user.fullName && (
-                    <div className="hidden md:flex flex-col text-sm font-medium duration-150">
-                      <span>{user.fullName}</span>
-                      <span className="font-normal text-xs text-muted-foreground">
-                        {user.email.slice(0, 20)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user.fullName}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                    {/* <p className="text-xs leading-none text-muted-foreground capitalize">
-                        {user.role}
-                      </p> */}
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/profile")}>
-                  <User />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/settings")}>
-                  <Settings />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="text-red-600 focus:bg-red-600/20"
-                >
-                  <LogOut />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          {/* <Button variant="outline" className="w-full" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button> */}
+        <SidebarFooter>
+          <NavUser user={user as any} />
         </SidebarFooter>
       </Sidebar>
 

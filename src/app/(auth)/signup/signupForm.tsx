@@ -31,7 +31,7 @@ export default function SignupForm({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<"student" | "superviser" | "coordinator">(
+  const [role, setRole] = useState<"student" | "supervisor" | "coordinator">(
     "student"
   );
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +54,7 @@ export default function SignupForm({
       return;
     }
     const payload = { fullName, email, password, role };
+    console.log("Signup payload:", payload);
     await dispatch(signup(payload))
       .unwrap()
       .then((res) => {
@@ -84,11 +85,11 @@ export default function SignupForm({
               defaultValue="student"
               tabs={[
                 { value: "student", label: "Student" },
-                { value: "superviser", label: "Superviser" },
+                { value: "supervisor", label: "Supervisor" },
                 { value: "coordinator", label: "Coordinator" },
               ]}
               onValueChange={(value) =>
-                setRole(value as "student" | "superviser" | "coordinator")
+                setRole(value as "student" | "supervisor" | "coordinator")
               }
             />
             <div className="space-y-2">
