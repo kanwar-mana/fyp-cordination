@@ -1,6 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import RepositoryFactory from "@/repository/RepositoryFactory";
-import { LoginRequest, SignupRequest } from "@/types/auth.types";
+import {
+  LoginRequest,
+  SignupRequest,
+  UpdatePasswordRequest,
+} from "@/types/auth.types";
 import { toast } from "@/components/ui/use-toast";
 
 const auth = RepositoryFactory.get("auth");
@@ -27,7 +31,7 @@ export const signup = createAsyncThunk(
       });
       return thunkAPI.rejectWithValue(error?.response?.data);
     }
-  }
+  },
 );
 
 export const verifyEmail = createAsyncThunk(
@@ -53,7 +57,7 @@ export const verifyEmail = createAsyncThunk(
       });
       return thunkAPI.rejectWithValue(error?.response?.data);
     }
-  }
+  },
 );
 
 export const login = createAsyncThunk(
@@ -90,7 +94,7 @@ export const login = createAsyncThunk(
 
       return thunkAPI.rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
@@ -156,13 +160,13 @@ export const forgotPassword = createAsyncThunk(
       });
       return thunkAPI.rejectWithValue(error?.response?.data);
     }
-  }
+  },
 );
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (
     payload: { email: string; token: string; newPassword: string },
-    thunkAPI
+    thunkAPI,
   ) => {
     try {
       const response = await auth.resetPassword(payload);
@@ -184,5 +188,29 @@ export const resetPassword = createAsyncThunk(
       });
       return thunkAPI.rejectWithValue(error?.response?.data);
     }
-  }
+  },
+);
+
+export const updatePassword = createAsyncThunk(
+  "auth/updatePassword",
+  async (payload: UpdatePasswordRequest, thunkAPI) => {
+    try {
+      const response = await auth.updatePassword(payload);
+      toast({
+        title: "Success!",
+        description: response.data.message || "Password updated successfully.",
+      });
+      return response.data;
+    } catch (error: any) {
+      console.log("Update password error:", error);
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.message ||
+          "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  },
 );

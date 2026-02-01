@@ -19,3 +19,19 @@ export interface TeamMember {
   avatar?: string;
   email: string;
 }
+
+export type SubmissionStatus = "submitted" | "pending" | "overdue" | "graded";
+
+export interface Submission {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: string;
+  submittedDate?: string;
+  status: SubmissionStatus;
+  grade?: string;
+  feedback?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
+}

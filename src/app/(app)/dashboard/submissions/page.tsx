@@ -1,15 +1,15 @@
 "use client";
-import StudentSettings from "@/components/app/student/StudentSettings";
+import StudentSubmissions from "@/components/app/student/StudentSubmissions";
 import { useAppSelector } from "@/store/hooks";
-import { SettingsSkeleton } from "@/components/app/skeleton/SettingsSkeleton";
+import { SubmissionsSkeleton } from "@/components/app/skeleton/SubmissionsSkeleton";
 
-export default function SettingsPage() {
+export default function SubmissionsPage() {
   const { user } = useAppSelector((state) => state.auth);
 
   if (!user) {
     return (
       <div className="container mx-auto md:p-6">
-        <SettingsSkeleton />
+        <SubmissionsSkeleton />
       </div>
     );
   }
@@ -17,13 +17,13 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto md:p-6">
       {user.role === "student" ? (
-        <StudentSettings />
+        <StudentSubmissions />
       ) : user.role === "supervisor" ? (
-        <div>Supervisor Settings - Coming Soon</div>
+        <div>Supervisor Submissions View - Coming Soon</div>
       ) : user.role === "coordinator" ? (
-        <div>Coordinator Settings - Coming Soon</div>
+        <div>Coordinator Submissions View - Coming Soon</div>
       ) : (
-        <SettingsSkeleton />
+        <SubmissionsSkeleton />
       )}
     </div>
   );

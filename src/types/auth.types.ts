@@ -35,6 +35,10 @@ export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
 }
+export interface UpdatePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
 
 // Auth Response Types
 export interface AuthResponse {
