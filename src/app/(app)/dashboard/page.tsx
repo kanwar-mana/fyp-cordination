@@ -1,5 +1,6 @@
 "use client";
 import StudentDashboard from "@/components/app/student/StudentDashboard";
+import CoordinatorDashboard from "@/components/app/coordinator/CoordinatorDashboard";
 import { useAppSelector } from "@/store/hooks";
 import { DashboardSkeleton } from "@/components/app/skeleton/DashboardSkeleton";
 
@@ -21,7 +22,7 @@ const DashboardPage = () => {
       ) : user.role === "supervisor" ? (
         <div>Supervisor Dashboard - Coming Soon</div>
       ) : user.role === "coordinator" ? (
-        <div>Coordinator Dashboard - Coming Soon</div>
+        <CoordinatorDashboard user={user} />
       ) : (
         <DashboardSkeleton />
       )}

@@ -6,7 +6,7 @@ interface RootLayoutProps {
 export default async function AuthLayout({ children }: RootLayoutProps) {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      {/* <Navbar /> */}
       <main>{children}</main>
     </div>
   );

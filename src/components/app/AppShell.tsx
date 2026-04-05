@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Settings, LogOut, User } from "lucide-react";
+import { LayoutDashboard, GraduationCap } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +25,6 @@ import {
 } from "@/components/ui/sidebar";
 import { NavUser } from "@/components/nav-user";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/auth/authThunk";
 
 interface NavItem {
   label: string;
@@ -41,19 +39,27 @@ export function AppShell({
   children: React.ReactNode;
   navItems: NavItem[];
 }) {
-  const { user } = useAppSelector((state) => state.auth);
+  const { user }: { user: any } = useAppSelector((state) => state.auth);
 
   const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
   const { state } = useSidebar();
 
   return (
     <div className="flex min-h-screen w-full">
       <Sidebar collapsible="icon">
         <SidebarHeader className="flex items-center justify-between px-2 py-3">
-          <Link href="/dashboard" className="font-semibold text-base">
-            F
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 font-semibold text-base"
+          >
+            <GraduationCap className="size-10 text-primary" />
+            {state === "expanded" && user.role === "coordinator" ? (
+              <span>Coordinator</span>
+            ) : user.role === "Supervisor" ? (
+              <span>Supervisor</span>
+            ) : user.role === "Student" ? (
+              <span>Student</span>
+            ) : null}
           </Link>
         </SidebarHeader>
 
@@ -98,7 +104,7 @@ export function AppShell({
       </Sidebar>
 
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-sidebar px-4">
           <SidebarTrigger />
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />

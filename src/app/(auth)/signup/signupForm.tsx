@@ -8,7 +8,7 @@ import { signup } from "@/store/auth/authThunk";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LockIcon, Mail, User2, Building } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,12 +17,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import TabNavigation from "@/components/TabNavigation";
+
+interface SignupFormProps {
+  setIsVerificationCodeSent: (value: boolean) => void;
+  setUserEmail: (value: string) => void;
+}
 
 export default function SignupForm({
   setIsVerificationCodeSent,
   setUserEmail,
-}: any) {
+}: SignupFormProps) {
+  type Department = {
+    label: string;
+    value: string;
+  };
+
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -32,10 +50,18 @@ export default function SignupForm({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"student" | "supervisor" | "coordinator">(
-    "student"
+    "student",
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<any | null>(null);
+
+  const departments: Department[] = [
+    { label: "Computer Science", value: "computer-science" },
+    { label: "Software Engineering", value: "software-engineering" },
+    { label: "Information Technology", value: "information-technology" },
+    { label: "Electrical Engineering", value: "electrical-engineering" },
+    { label: "Mechanical Engineering", value: "mechanical-engineering" },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,16 +95,20 @@ export default function SignupForm({
 
   return (
     <div className="flex items-center justify-center w-full">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Join the FYP Coordination System</CardDescription>
+      <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
+        <CardHeader className="mb-6">
+          <CardTitle className="text-3xl sm:text-4xl font-bold">
+            Create Account
+          </CardTitle>
+          <CardDescription className="font-medium text-muted-foreground">
+            Join the FYP Coordination System
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error?.message}
+                {error?.message || error}
               </div>
             )}
             <TabNavigation
@@ -92,29 +122,59 @@ export default function SignupForm({
                 setRole(value as "student" | "supervisor" | "coordinator")
               }
             />
-            <div className="space-y-2">
+            <div className="space-y-2 mb-6">
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Enter your full name"
                 value={fullName}
                 onChange={(e) => setName(e.target.value)}
                 required
                 disabled={isLoading}
+                size="lg"
+                icon={<User2 />}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 mb-6">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="Enter your university email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                size="lg"
+                icon={<Mail />}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Combobox
+                items={departments}
+                itemToStringValue={(department: { label: string }) =>
+                  department.label
+                }
+              >
+                <ComboboxInput
+                  id="department"
+                  size="lg"
+                  icon={<Building />}
+                  placeholder="Select a department"
+                />
+                <ComboboxContent size="lg">
+                  <ComboboxEmpty>No items found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(department) => (
+                      <ComboboxItem key={department.value} value={department}>
+                        {department.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -127,13 +187,16 @@ export default function SignupForm({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  size="lg"
+                  icon={<LockIcon />}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-5 top-0 h-full p-0! hover:bg-transparent"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -156,16 +219,26 @@ export default function SignupForm({
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={isLoading}
+                size="lg"
+                icon={<LockIcon />}
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 mt-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+          <CardFooter className="flex flex-col space-y-4 mt-8">
+            <Button
+              type="submit"
+              className="w-full text-md font-semibold shadow-[0_0_10px_primary]"
+              disabled={isLoading}
+              size="lg"
+            >
               {isLoading ? "Creating account..." : "Create Account"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link
+                href="/login"
+                className="font-semibold text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </p>

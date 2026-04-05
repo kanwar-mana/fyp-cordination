@@ -46,18 +46,24 @@ const StudentDashboard = ({ user }: { user: any }) => {
       </div>
       <div className="flex flex-wrap gap-4 mt-6">
         <div className="flex-1 bg-card rounded-md p-4 min-h-24">
-          <h2 className="font-semibold text-muted-foreground">Project Title</h2>
+          <p className="font-semibold text-xs text-muted-foreground">
+            PROJECT TITLE
+          </p>
           <p className="mt-2 text-sm">
             AI-Powered Chatbot for Customer Support and technical assistance
           </p>
         </div>
         <div className="flex flex-1 gap-4 w-full">
           <div className="bg-card w-full rounded-md p-4 min-h-24">
-            <h2 className="font-semibold text-muted-foreground">Supervisor</h2>
+            <p className="font-semibold text-xs text-muted-foreground">
+              SUPERVISOR
+            </p>
             <p className="mt-2 text-sm">Dr. Zahid</p>
           </div>
           <div className="bg-card w-full rounded-md p-4 min-h-24">
-            <h2 className="font-semibold text-muted-foreground">Status</h2>
+            <p className="font-semibold text-xs text-muted-foreground">
+              STATUS
+            </p>
             <p className="mt-2 text-sm text-green-900 dark:text-green-100  bg-green-500/20 w-fit rounded-full py-1 px-4">
               In Progress
             </p>
