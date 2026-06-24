@@ -1,9 +1,23 @@
 // User Types
+export type UserRole = "student" | "supervisor" | "coordinator";
+
+export interface CoordinatorSession {
+  id?: string;
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CoordinatorProfile {
+  sessions?: CoordinatorSession[];
+}
+
 export interface User {
   _id: string;
   email: string;
   fullName: string;
-  role: "student" | "supervisor" | "coordinator";
+  role: UserRole;
+  coordinatorProfile?: CoordinatorProfile;
   avatar?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -23,7 +37,7 @@ export interface SignupRequest {
   fullName: string;
   email: string;
   password: string;
-  role?: "student" | "supervisor" | "coordinator";
+  role?: UserRole;
 }
 
 export interface ForgotPasswordRequest {

@@ -1,6 +1,7 @@
 // Role-Based Access Control Configuration
+import type { UserRole } from "@/types/auth.types";
 
-export type UserRole = "student" | "supervisor" | "coordinator";
+export type { UserRole };
 
 export const routePermissions: Record<string, UserRole[]> = {
   "/dashboard": ["student", "supervisor", "coordinator"],
@@ -16,7 +17,7 @@ export const routePermissions: Record<string, UserRole[]> = {
 // Check if a role has access to a specific route
 export const hasRouteAccess = (
   role: UserRole | undefined,
-  pathname: string
+  pathname: string,
 ): boolean => {
   if (!role) return false;
 
