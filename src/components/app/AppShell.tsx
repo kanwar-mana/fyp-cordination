@@ -24,7 +24,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { NavUser } from "@/components/nav-user";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
+import type { UserRole } from "@/types/auth.types";
 
 interface NavItem {
   label: string;
@@ -39,7 +40,12 @@ export function AppShell({
   children: React.ReactNode;
   navItems: NavItem[];
 }) {
-  const { user }: { user: any } = useAppSelector((state) => state.auth);
+  const user = useAppSelector((state) => state.auth.user);
+  const roleLabelMap: Record<UserRole, string> = {
+    student: "Student",
+    supervisor: "Supervisor",
+    coordinator: "Coordinator",
+  };
 
   const pathname = usePathname();
   const { state } = useSidebar();
@@ -53,12 +59,8 @@ export function AppShell({
             className="flex items-center gap-2 font-semibold text-base"
           >
             <GraduationCap className="size-10 text-primary" />
-            {state === "expanded" && user.role === "coordinator" ? (
-              <span>Coordinator</span>
-            ) : user.role === "Supervisor" ? (
-              <span>Supervisor</span>
-            ) : user.role === "Student" ? (
-              <span>Student</span>
+            {state === "expanded" && user?.role ? (
+              <span>{roleLabelMap[user.role]}</span>
             ) : null}
           </Link>
         </SidebarHeader>
@@ -98,9 +100,7 @@ export function AppShell({
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
-          <NavUser user={user as any} />
-        </SidebarFooter>
+        <SidebarFooter>{user ? <NavUser user={user} /> : null}</SidebarFooter>
       </Sidebar>
 
       <SidebarInset>

@@ -1,8 +1,8 @@
-import { useAppSelector } from "@/store/hooks";
 import { FilePlus, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProjectTimeline } from "@/components/Timeline";
 import { Milestone } from "@/types/app.types";
+import type { User } from "@/types/auth.types";
 
 const milestones: Milestone[] = [
   {
@@ -35,7 +35,7 @@ const milestones: Milestone[] = [
   },
 ];
 
-const StudentDashboard = ({ user }: { user: any }) => {
+const StudentDashboard = ({ user }: { user: User }) => {
   return (
     <div className="flex flex-col">
       <div>

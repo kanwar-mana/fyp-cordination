@@ -45,6 +45,8 @@ function ResetPasswordForm() {
     const tokenParam = searchParams.get("token");
     const emailParam = searchParams.get("email");
 
+    console.log("Search params:", { token: tokenParam, email: emailParam });
+
     if (tokenParam && emailParam) {
       setToken(tokenParam);
       setEmail(decodeURIComponent(emailParam));
