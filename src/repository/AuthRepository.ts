@@ -11,6 +11,7 @@ import type {
 } from "@/types/auth.types";
 
 const AUTH_BASE = "/auth";
+const COORDINATOR_BASE = "/coordinator";
 
 const SIGNUP = `${AUTH_BASE}/signup`;
 const LOGIN = `${AUTH_BASE}/login`;
@@ -20,6 +21,11 @@ const REFRESH = `${AUTH_BASE}/refresh`;
 const FORGOT_PASSWORD = `${AUTH_BASE}/forgot-password`;
 const RESET_PASSWORD = `${AUTH_BASE}/reset-password`;
 const UPDATE_PASSWORD = `${AUTH_BASE}/update-password`;
+
+//COORDINATOR ENDPOINTS
+
+const SUPERVISORS = `${COORDINATOR_BASE}/supervisors`;
+const STUDENTS = `${COORDINATOR_BASE}/students`;
 
 export default {
   signup(payload: SignupRequest) {
@@ -55,5 +61,15 @@ export default {
 
   updatePassword(payload: { currentPassword: string; newPassword: string }) {
     return apiClient.post<ApiResponse>(UPDATE_PASSWORD, payload);
+  },
+
+  // COORDINATOR ENDPOINTS
+
+  getSupervisors() {
+    return apiClient.get<ApiResponse<{ supervisors: User[] }>>(SUPERVISORS);
+  },
+
+  getStudents() {
+    return apiClient.get<ApiResponse<{ students: User[] }>>(STUDENTS);
   },
 };
