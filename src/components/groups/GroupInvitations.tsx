@@ -3,15 +3,20 @@
 import { useEffect, useState } from "react";
 import { Bell, CheckCircle2, X, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { getMyInvitations, respondToInvitation, getGroup } from "@/store/group/groupThunk";
+import { getMyInvitations, respondToInvitation } from "@/store/group/groupThunk";
 
-export const GroupInvitations = () => {
+interface GroupInvitationsProps {
+  /** When true, renders nothing instead of empty state — for embedded use inside dashboards */
+  hideWhenEmpty?: boolean;
+}
+
+export const GroupInvitations = ({ hideWhenEmpty = false }: GroupInvitationsProps) => {
   const dispatch = useAppDispatch();
   const { myInvitations, isLoading } = useAppSelector((s) => s.group);
   const [responding, setResponding] = useState<string | null>(null);
+  const [accepted, setAccepted] = useState(false);
 
   useEffect(() => {
     dispatch(getMyInvitations());
@@ -24,12 +29,16 @@ export const GroupInvitations = () => {
     setResponding(requestId + action);
     try {
       await dispatch(respondToInvitation({ requestId, action })).unwrap();
-      dispatch(getMyInvitations()); // refresh list
+      if (action === "ACCEPTED") {
+        setAccepted(true);
+      }
+      dispatch(getMyInvitations()); // refresh — after accept, all others become REJECTED server-side
     } finally {
       setResponding(null);
     }
   };
 
+  // ── Loading skeleton ─────────────────────────────────────────────────────
   if (isLoading && myInvitations.length === 0) {
     return (
       <div className="flex items-center justify-center py-6 text-muted-foreground gap-2">
@@ -39,7 +48,9 @@ export const GroupInvitations = () => {
     );
   }
 
-  if (myInvitations.length === 0) {
+  // ── After acceptance, hide entirely ─────────────────────────────────────
+  if (accepted || myInvitations.length === 0) {
+    if (hideWhenEmpty) return null; // embedded context: render nothing
     return (
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
         <Bell className="w-8 h-8 opacity-20" />

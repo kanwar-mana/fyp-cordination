@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { User } from "@/types/auth.types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { getGroup, createGroup } from "@/store/group/groupThunk";
+import { getGroup, createGroup, getMyInvitations } from "@/store/group/groupThunk";
 import { getSessions } from "@/store/session/sessionThunk";
 import CreateGroupForm from "@/components/groups/CreateGroupForm";
 import { CreateGroupPayload } from "@/types/group.types";
@@ -49,7 +49,7 @@ const StatCard = ({
 // ─── Main ─────────────────────────────────────────────────────────────────
 const StudentDashboard = ({ user }: { user: User }) => {
   const dispatch = useAppDispatch();
-  const { currentGroup, isLoading } = useAppSelector((state) => state.group);
+  const { currentGroup,myInvitations, isLoading } = useAppSelector((state) => state.group);
   const { sessions } = useAppSelector((state) => state.session);
   const [isFetchingSessions, setIsFetchingSessions] = useState(true);
 
@@ -69,6 +69,9 @@ const StudentDashboard = ({ user }: { user: User }) => {
   const handleCreateGroup = async (payload: CreateGroupPayload) => {
     await dispatch(createGroup(payload)).unwrap();
   };
+  useEffect(() => {
+      dispatch(getMyInvitations());
+  }, [dispatch]);
 
   // ── No group yet ──────────────────────────────────────────────────────
   if (!groupId && !currentGroup) {
@@ -82,13 +85,15 @@ const StudentDashboard = ({ user }: { user: User }) => {
         </div>
 
         {/* Pending invitations */}
-        <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5">
-          <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-            <Bell className="w-4 h-4" />
-            <span className="text-xs font-semibold uppercase tracking-wide">Group Invitations</span>
+        {myInvitations.length > 0 && (
+          <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+              <Bell className="w-4 h-4" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Group Invitations</span>
+            </div>
+            <GroupInvitations />
           </div>
-          <GroupInvitations />
-        </div>
+        )}
 
         {isFetchingSessions ? (
           <div className="p-12 text-center text-muted-foreground animate-pulse">
@@ -208,6 +213,8 @@ const StudentDashboard = ({ user }: { user: User }) => {
           {approvedCount} of {totalCount} milestones approved
         </p>
       </div>
+
+
 
       <Separator />
 

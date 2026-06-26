@@ -190,3 +190,59 @@ export const respondToInvitation = createAsyncThunk(
     }
   }
 );
+
+export const removeMember = createAsyncThunk(
+  "groups/removeMember",
+  async (payload: { groupId: string; studentId: string }, thunkAPI) => {
+    try {
+      const response = await groups.removeMember(payload);
+      toast({ title: "Success", description: "Member removed successfully." });
+      return response.data.data;
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.response?.data?.message || "Failed to remove member.", variant: "destructive" });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
+export const leaveGroup = createAsyncThunk(
+  "groups/leaveGroup",
+  async (groupId: string, thunkAPI) => {
+    try {
+      const response = await groups.leaveGroup(groupId);
+      toast({ title: "Success", description: "You left the group." });
+      return response.data.data;
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.response?.data?.message || "Failed to leave group.", variant: "destructive" });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
+export const sendSupervisorRequest = createAsyncThunk(
+  "groups/sendSupervisorRequest",
+  async (payload: { groupId: string; supervisorId: string }, thunkAPI) => {
+    try {
+      const response = await groups.sendSupervisorRequest(payload);
+      toast({ title: "Success", description: "Supervisor request sent successfully." });
+      return response.data.data;
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.response?.data?.message || "Failed to send request.", variant: "destructive" });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
+export const cancelSupervisorRequest = createAsyncThunk(
+  "groups/cancelSupervisorRequest",
+  async (requestId: string, thunkAPI) => {
+    try {
+      await groups.cancelSupervisorRequest(requestId);
+      toast({ title: "Success", description: "Request cancelled successfully." });
+      return requestId;
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.response?.data?.message || "Failed to cancel request.", variant: "destructive" });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);

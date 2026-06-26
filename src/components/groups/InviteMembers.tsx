@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Search, UserPlus, X, Loader2, Users } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Search, UserPlus, X, Loader2, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getAvailableStudents, inviteStudent } from "@/store/group/groupThunk";
 import { User } from "@/types/auth.types";
@@ -20,10 +19,23 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
   const { availableStudents, isLoading } = useAppSelector((s) => s.group);
   const [query, setQuery] = useState("");
   const [inviting, setInviting] = useState<string | null>(null);
+  const [invitedStudentIds, setInvitedStudentIds] = useState<Set<string>>(new Set());
+  const [isFocused, setIsFocused] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     dispatch(getAvailableStudents());
   }, [dispatch]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsFocused(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const spots = requiredCount - currentCount;
 
@@ -36,6 +48,7 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
     setInviting(studentId);
     try {
       await dispatch(inviteStudent({ groupId, studentId })).unwrap();
+      setInvitedStudentIds((prev) => new Set(prev).add(studentId));
     } finally {
       setInviting(null);
     }
@@ -54,7 +67,7 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 relative" ref={wrapperRef}>
       {/* Spots counter */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
@@ -62,15 +75,16 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
         </p>
       </div>
 
-      {/* Search */}
+      {/* Search Input */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           value={query}
+          onFocus={() => setIsFocused(true)}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search students by name or email…"
-          className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border/50 bg-muted/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 placeholder:text-muted-foreground"
+          className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border/50 bg-background focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 placeholder:text-muted-foreground"
         />
         {query && (
           <button
@@ -82,52 +96,67 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
         )}
       </div>
 
-      {/* Student list */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">Loading students…</span>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="py-8 text-center text-sm text-muted-foreground">
-          {query ? "No students match your search." : "No available students found in your department."}
-        </div>
-      ) : (
-        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-          {filtered.map((student: User) => (
-            <div
-              key={student._id}
-              className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-border/40 bg-card/60 hover:bg-card transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                    {getInitials(student.fullName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium leading-tight">{student.fullName}</p>
-                  <p className="text-xs text-muted-foreground">{student.email}</p>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 h-7 text-xs"
-                disabled={inviting === student._id}
-                onClick={() => handleInvite(student._id)}
-              >
-                {inviting === student._id ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <UserPlus className="w-3 h-3" />
-                )}
-                {inviting === student._id ? "Sending…" : "Invite"}
-              </Button>
+      {/* Dropdown Results */}
+      {isFocused && query.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-card rounded-lg border border-border shadow-lg overflow-hidden max-h-72 flex flex-col">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Searching students…</span>
             </div>
-          ))}
+          ) : filtered.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No students match "{query}".
+            </div>
+          ) : (
+            <div className="overflow-y-auto p-2 space-y-1">
+              {filtered.map((student: User) => {
+                const isInvited = invitedStudentIds.has(student._id);
+                return (
+                  <div
+                    key={student._id}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                          {getInitials(student.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium leading-tight">{student.fullName}</p>
+                        <p className="text-xs text-muted-foreground">{student.email}</p>
+                      </div>
+                    </div>
+                    {isInvited ? (
+                      <Button size="sm" variant="secondary" className="gap-1.5 h-7 text-xs cursor-default" disabled>
+                        <Clock className="w-3 h-3 text-amber-500" />
+                        Pending
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 h-7 text-xs"
+                        disabled={inviting === student._id}
+                        onClick={() => handleInvite(student._id)}
+                      >
+                        {inviting === student._id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <UserPlus className="w-3 h-3" />
+                        )}
+                        {inviting === student._id ? "Sending…" : "Invite"}
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
+

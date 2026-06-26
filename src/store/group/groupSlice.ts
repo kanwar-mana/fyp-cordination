@@ -15,6 +15,10 @@ import {
   respondToSupervisorRequest,
   inviteStudent,
   respondToInvitation,
+  removeMember,
+  leaveGroup,
+  sendSupervisorRequest,
+  cancelSupervisorRequest,
 } from "./groupThunk";
 
 interface GroupState {
@@ -124,6 +128,20 @@ const groupSlice = createSlice({
         if (action.payload.action === "ACCEPTED") {
           state.currentGroup = action.payload.data as any;
         }
+      })
+      .addCase(removeMember.fulfilled, (state, action) => {
+        state.currentGroup = action.payload;
+        const index = state.allGroups.findIndex(g => g._id === action.payload._id);
+        if (index !== -1) state.allGroups[index] = action.payload;
+      })
+      .addCase(leaveGroup.fulfilled, (state, action) => {
+        state.currentGroup = null;
+      })
+      .addCase(sendSupervisorRequest.fulfilled, (state, action) => {
+        // Optimistically update some state if needed, or simply refetch
+      })
+      .addCase(cancelSupervisorRequest.fulfilled, (state, action) => {
+        // Optimistically update some state if needed, or simply refetch
       });
   },
 });
