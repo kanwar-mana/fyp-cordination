@@ -5,12 +5,13 @@ export interface SessionMilestone {
   dueDate: string;
   description: string;
   status?: string;
+  documentUrls?: string[];
 }
 
 export interface SessionSettings {
   maxGroupSize?: number;
   minGroupSize?: number;
-  proposalDeadline?: string;
+  groupsPerSupervisor?: number;
 }
 
 export interface Session {

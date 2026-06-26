@@ -1,291 +1,259 @@
-import { Calendar, Users, User, Github, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import {
+  Calendar,
+  Users,
+  User,
+  GitBranch,
+  Cpu,
+  Clock,
+  CheckCircle2,
+  UserPlus,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Milestone, TeamMember } from "@/types/app.types";
-import { ProjectTimeline } from "@/components/Timeline";
+import { Group } from "@/types/group.types";
+import { useAppSelector } from "@/store/hooks";
+import { formatDate } from "@/components/milestones/milestoneUtils";
+import { InviteMembers } from "@/components/groups/InviteMembers";
 
-const projectData = {
-  title: "AI-Powered Chatbot for Customer Support",
-  description:
-    "An intelligent chatbot system using natural language processing and machine learning to provide automated customer support. The system learns from interactions to improve response accuracy over time.",
-  status: "In Progress",
-  progress: 65,
-  category: "Artificial Intelligence",
-  startDate: "February 1, 2024",
-  expectedEndDate: "August 15, 2024",
-  supervisor: {
-    name: "Dr. Zahid Hussain",
-    email: "zahid.hussain@uet.edu.pk",
-    department: "Computer Science",
-  },
-  technologies: ["Python", "TensorFlow", "React", "Node.js", "MongoDB"],
-  objectives: [
-    "Develop NLP-based query understanding module",
-    "Implement machine learning model for response generation",
-    "Create user-friendly web interface",
-    "Integrate with existing customer database",
-    "Achieve 90% customer satisfaction rate",
-  ],
-};
+// ─── Small section card ────────────────────────────────────────────────────
+const InfoCard = ({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) => (
+  <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5 flex flex-col gap-3">
+    <div className="flex items-center gap-2 text-muted-foreground">
+      {icon}
+      <span className="text-xs font-semibold uppercase tracking-wide">{title}</span>
+    </div>
+    {children}
+  </div>
+);
 
-const teamMembers: TeamMember[] = [
-  {
-    id: 1,
-    name: "Ahmed Khan",
-    role: "Team Lead",
-    email: "ahmed@student.uet.edu.pk",
-  },
-  {
-    id: 2,
-    name: "Sara Ali",
-    role: "ML Engineer",
-    email: "sara@student.uet.edu.pk",
-  },
-  {
-    id: 3,
-    name: "Usman Malik",
-    role: "Frontend Developer",
-    email: "usman@student.uet.edu.pk",
-  },
-];
+// ─── Initials helper ───────────────────────────────────────────────────────
+const initials = (name?: string) =>
+  (name || "?")
+    .split(" ")
+    .map((w) => w[0] || "")
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
 
-const milestones: Milestone[] = [
-  {
-    id: 1,
-    date: "February 15, 2024",
-    title: "Project Proposal",
-    description: "Initial project proposal submission and approval.",
-    status: "completed",
-    deliverables: ["Proposal Document", "Initial Requirements"],
-  },
-  {
-    id: 2,
-    date: "March 20, 2024",
-    title: "Literature Review",
-    description:
-      "Comprehensive review of existing chatbot systems and NLP techniques.",
-    status: "completed",
-    deliverables: ["Literature Review Report", "Technology Stack Selection"],
-  },
-  {
-    id: 3,
-    date: "April 25, 2024",
-    title: "System Design",
-    description: "Complete system architecture and database design.",
-    status: "completed",
-    deliverables: [
-      "System Architecture Diagram",
-      "Database Schema",
-      "API Design",
-    ],
-  },
-  {
-    id: 4,
-    date: "May 30, 2024",
-    title: "Mid-term Presentation",
-    description:
-      "Present project progress and initial prototype demonstration.",
-    status: "completed",
-    deliverables: ["Presentation Slides", "Prototype Demo"],
-  },
-  {
-    id: 5,
-    date: "July 10, 2024",
-    title: "Implementation Phase",
-    description: "Core module development and integration.",
-    status: "in-progress",
-    deliverables: ["NLP Module", "ML Model", "Web Interface"],
-  },
-  {
-    id: 6,
-    date: "August 1, 2024",
-    title: "Testing & Documentation",
-    description: "System testing, bug fixes, and final documentation.",
-    status: "upcoming",
-    deliverables: ["Test Reports", "User Manual", "Technical Documentation"],
-  },
-  {
-    id: 7,
-    date: "August 15, 2024",
-    title: "Final Presentation (Viva)",
-    description: "Project defense and final demonstration.",
-    status: "pending",
-    deliverables: ["Final Report", "Project Demo", "Source Code"],
-  },
-];
+// ─── Main component ────────────────────────────────────────────────────────
+export const Project = ({ group }: { group: Group }) => {
+  const { user } = useAppSelector((s) => s.auth);
 
-export const Project = () => {
-  const completedMilestones = milestones.filter(
-    (m) => m.status === "completed"
-  ).length;
+  const isLeader = user?.role === "student" && user._id === group.leader?._id;
+  const groupNotFull = group.members.length < group.requiredMembers;
+  const canInvite = isLeader && groupNotFull && group.status === "PENDING_SUPERVISOR";
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl md:text-3xl font-bold">
-              {projectData.title}
-            </h1>
-            <Badge
-              variant="secondary"
-              className="bg-green-500/10 text-green-700 dark:text-green-400"
-            >
-              {projectData.status}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground max-w-2xl">
-            {projectData.description}
-          </p>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {projectData.technologies.map((tech, index) => (
-              <Badge key={index} variant="secondary">
-                {tech}
-              </Badge>
-            ))}
-          </div>
+    <div className="flex flex-col gap-6 w-full pb-10">
+      {/* ── Page header ───────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-start gap-3 flex-wrap">
+          <h1 className="text-2xl md:text-3xl font-bold">{group.projectDetails.title}</h1>
+          <Badge
+            variant="outline"
+            className={`mt-1 ${
+              group.status === "APPROVED"
+                ? "text-green-600 border-green-500/30 bg-green-500/10"
+                : group.status === "REJECTED"
+                ? "text-red-600 border-red-500/30 bg-red-500/10"
+                : "text-amber-600 border-amber-500/30 bg-amber-500/10"
+            }`}
+          >
+            {group.status.replace(/_/g, " ")}
+          </Badge>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Github className="w-4 h-4 mr-2" />
-            Repository
-          </Button>
-          <Button size="sm">
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Live Demo
-          </Button>
-        </div>
-      </div>
-
-      {/* Progress Overview */}
-      <div className="">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold">Overall Progress</h2>
-          <span className="text-2xl font-bold text-primary">
-            {projectData.progress}%
-          </span>
-        </div>
-        <Progress value={projectData.progress} className="h-3 mb-2" />
-        <p className="text-sm text-muted-foreground">
-          {completedMilestones} of {milestones.length} milestones completed
+        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+          {group.projectDetails.description}
         </p>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Badge variant="outline" className="gap-1">
+            <GitBranch className="w-3 h-3" /> {group.projectDetails.domain}
+          </Badge>
+          {group.projectDetails.technologies.map((tech, i) => (
+            <Badge key={i} variant="secondary" className="gap-1">
+              <Cpu className="w-3 h-3" /> {tech}
+            </Badge>
+          ))}
+        </div>
       </div>
 
-      {/* Project Info Grid */}
+      {/* ── Info cards ─────────────────────────────────────────────── */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Supervisor Card */}
-        <div className="bg-card rounded-xl  shadow-sm p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <User className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Supervisor</h3>
-          </div>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src="" />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {projectData.supervisor.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{projectData.supervisor.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {projectData.supervisor.department}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Timeline Card */}
-        <div className="bg-card rounded-xl  shadow-sm p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Timeline</h3>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Start Date</span>
-              <span className="text-sm font-medium">
-                {projectData.startDate}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
-                Expected End
-              </span>
-              <span className="text-sm font-medium">
-                {projectData.expectedEndDate}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Team Card */}
-        <div className="bg-card rounded-xl shadow-sm p-5">
-          <div className="flex justify-between">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Team Members</h3>
-            </div>
-            <p className="text-sm text-muted-foreground mt-3">
-              {teamMembers.length} members
-            </p>
-          </div>
-          <div className="flex -space-x-2">
-            {teamMembers.map((member) => (
-              <Avatar
-                key={member.id}
-                className="h-10 w-10 border-2 border-card"
-              >
-                <AvatarImage src={member.avatar} />
-                <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                  {member.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+        {/* Supervisor */}
+        <InfoCard title="Supervisor" icon={<User className="w-3.5 h-3.5" />}>
+          {group.supervisor ? (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                  {initials(group.supervisor.fullName)}
                 </AvatarFallback>
               </Avatar>
+              <div>
+                <p className="text-sm font-medium leading-tight">{group.supervisor.fullName}</p>
+                <p className="text-xs text-muted-foreground">{group.supervisor.email}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">Not assigned yet.</p>
+          )}
+        </InfoCard>
+
+        {/* Session */}
+        <InfoCard title="Session" icon={<Calendar className="w-3.5 h-3.5" />}>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Start</span>
+              <span className="font-medium">{formatDate(group.session?.startDate)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">End</span>
+              <span className="font-medium">{formatDate(group.session?.endDate)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Session</span>
+              <span className="font-medium truncate max-w-[120px]">
+                {group.session?.name || "—"}
+              </span>
+            </div>
+          </div>
+        </InfoCard>
+
+        {/* Team */}
+        <InfoCard
+          title={`Team (${group.members.length}/${group.requiredMembers})`}
+          icon={<Users className="w-3.5 h-3.5" />}
+        >
+          <div className="flex flex-col gap-2">
+            {group.members.map((member) => (
+              <div key={member._id} className="flex items-center gap-2.5">
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
+                    {initials(member.fullName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col leading-none">
+                  <span className="text-sm font-medium">{member.fullName || "Unknown"}</span>
+                  {member._id === group.leader._id && (
+                    <span className="text-[10px] text-muted-foreground">Leader</span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
-        </div>
+        </InfoCard>
       </div>
 
-      <Separator className="my-2" />
+      {/* ── Invite Members (leader only, group not full, PENDING_SUPERVISOR) ── */}
+      {canInvite && (
+        <InfoCard
+          title="Invite Members"
+          icon={<UserPlus className="w-3.5 h-3.5" />}
+        >
+          <InviteMembers
+            groupId={group._id}
+            currentCount={group.members.length}
+            requiredCount={group.requiredMembers}
+          />
+        </InfoCard>
+      )}
 
-      {/* Project Timeline */}
-      <ProjectTimeline milestones={milestones} />
-      {/* Technologies & Objectives */}
-      {/* <div className="flex flex-col gap-4">
-     
-          <div className="bg-card rounded-xl  shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Technologies Used</h3>
-            </div>
-          </div>
+      <Separator />
 
-    
-          <div className="bg-card rounded-xl shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Project Objectives</h3>
-            </div>
-            <ul className="space-y-2">
-              {projectData.objectives.map((objective, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                  <span className="text-muted-foreground">{objective}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div> */}
+      {/* ── Milestone timeline ─────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="w-4 h-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Milestone Timeline
+          </h2>
+        </div>
+        <div className="relative pl-4 border-l-2 border-border/50 space-y-5">
+          {(group.session?.fypMilestones || []).map((sm, idx) => {
+            const mp = group.milestones?.find(
+              (p) => p.title === sm.title || p._id === sm._id
+            );
+            const isApproved = mp?.status === "APPROVED";
+            const isSubmitted = mp?.status === "SUBMITTED";
+            const isPastDue =
+              !isApproved && !isSubmitted && new Date(sm.dueDate) < new Date();
+
+            return (
+              <div key={sm._id || idx} className="relative flex items-start gap-4 -ml-[13px]">
+                <div
+                  className={`mt-0.5 w-5 h-5 rounded-full shrink-0 flex items-center justify-center border-2 border-background ${
+                    isApproved
+                      ? "bg-green-500"
+                      : isSubmitted
+                      ? "bg-blue-500"
+                      : isPastDue
+                      ? "bg-destructive"
+                      : "bg-muted-foreground/30"
+                  }`}
+                >
+                  {isApproved && <CheckCircle2 className="w-3 h-3 text-white" />}
+                </div>
+                <div className="flex-1 pb-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-sm font-semibold">{sm.title}</p>
+                    <span
+                      className={`text-xs ${
+                        isPastDue ? "text-destructive" : "text-muted-foreground"
+                      }`}
+                    >
+                      {formatDate(sm.dueDate)}
+                    </span>
+                  </div>
+                  {sm.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{sm.description}</p>
+                  )}
+                  <div className="mt-1">
+                    {isApproved ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-green-500/10 text-green-600 border-green-500/30"
+                      >
+                        Approved
+                      </Badge>
+                    ) : isSubmitted ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-blue-500/10 text-blue-600 border-blue-500/30"
+                      >
+                        Under Review
+                      </Badge>
+                    ) : isPastDue ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-destructive/10 text-destructive border-destructive/30"
+                      >
+                        Past Due
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-muted text-muted-foreground"
+                      >
+                        Pending
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const baseDomain =
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api/v1";
 
 const apiClient = axios.create({
   baseURL: baseDomain,
