@@ -21,7 +21,7 @@ const sessionSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(createSession.fulfilled, (state, action) => {
-        state.sessions.push(action.payload.session);
+        state.sessions.push(action.payload);
       })
       .addCase(updateSession.fulfilled, (state, action) => {
         const updatedSession = action.payload;

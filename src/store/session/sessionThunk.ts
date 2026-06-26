@@ -13,7 +13,7 @@ export const createSession = createAsyncThunk(
         title: "Success!",
         description: response.data.message || "Session created successfully.",
       });
-      return response.data;
+      return response.data.data;
     } catch (error: any) {
       console.log("Create session error:", error);
       toast({
@@ -60,7 +60,7 @@ export const updateSession = createAsyncThunk(
         title: "Success!",
         description: response.data.message || "Session updated successfully.",
       });
-      return response.data;
+      return response.data.data;
     } catch (error: any) {
       toast({
         title: "Error",
