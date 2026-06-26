@@ -1,6 +1,7 @@
 "use client";
 import StudentDashboard from "@/components/app/student/StudentDashboard";
 import CoordinatorDashboard from "@/components/app/coordinator/CoordinatorDashboard";
+import SupervisorDashboard from "@/components/app/supervisor/SupervisorDashboard";
 import { useAppSelector } from "@/store/hooks";
 import { DashboardSkeleton } from "@/components/app/skeleton/DashboardSkeleton";
 import type { User } from "@/types/auth.types";
@@ -10,7 +11,7 @@ const renderDashboardByRole = (user: User) => {
     case "student":
       return <StudentDashboard user={user} />;
     case "supervisor":
-      return <div>Supervisor Dashboard - Coming Soon</div>;
+      return <SupervisorDashboard user={user} />;
     case "coordinator":
       return <CoordinatorDashboard user={user} />;
     default:

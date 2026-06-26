@@ -5,9 +5,7 @@ import {
   ArrowRight,
   CalendarDays,
   ClipboardCheck,
-  Flag,
   FolderGit2,
-  PauseCircle,
   TrendingDown,
   TrendingUp,
   Users,
@@ -37,14 +35,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -58,6 +48,12 @@ import {
   deleteSession,
   changeSessionActivation,
 } from "@/store/session/sessionThunk";
+import SessionDetailsModal from "./SessionDetailsModal";
+import { getSessionLifecycle, getActivationState, formatDateRange } from "@/lib/session.utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AllGroupsTable from "@/components/groups/AllGroupsTable";
+import { getAllGroups, deleteGroup } from "@/store/group/groupThunk";
+import { getSupervisors } from "@/store/user/userThunk";
 import type { User } from "@/types/auth.types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { Session } from "@/types/session.types";
@@ -65,104 +61,14 @@ import { useEffect, useState } from "react";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const metrics = [
-  {
-    title: "Active Projects",
-    value: 48,
-    delta: "+6 this month",
-    trend: "up" as const,
-    icon: FolderGit2,
-  },
-  {
-    title: "Supervisors",
-    value: 17,
-    delta: "14 available now",
-    trend: "up" as const,
-    icon: Users,
-  },
-  {
-    title: "Pending Approvals",
-    value: 9,
-    delta: "3 urgent items",
-    trend: "down" as const,
-    icon: ClipboardCheck,
-  },
-  {
-    title: "Missed Deadlines",
-    value: 2,
-    delta: "Needs follow-up",
-    trend: "down" as const,
-    icon: AlertTriangle,
-  },
-];
-
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function toDate(value?: string) {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatDate(value?: string) {
-  const date = toDate(value);
-  if (!date) return "Not set";
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatDateRange(startDate?: string, endDate?: string) {
-  if (!startDate && !endDate) return "Dates not configured";
-  return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-}
-
-function getSessionLifecycle(session: Session) {
-  const now = new Date();
-  const start = toDate(session.startDate);
-  const end = toDate(session.endDate);
-
-  if (start && now < start)
-    return { label: "Upcoming", variant: "secondary" as const };
-  if (end && now > end)
-    return { label: "Completed", variant: "outline" as const };
-  return { label: "Active", variant: "default" as const };
-}
-
-function getActivationState(session: Session) {
-  console.log("Session activation state:", session.isActive);
-  if (session.isActive === false) {
-    return {
-      label: "Paused",
-      variant: "secondary" as const,
-      icon: PauseCircle,
-      muted: true,
-    };
-  }
-  return {
-    label: "Active",
-    variant: "default" as const,
-    icon: Flag,
-    muted: false,
-  };
-}
-
-function getDurationDays(startDate?: string, endDate?: string) {
-  const start = toDate(startDate);
-  const end = toDate(endDate);
-  if (!start || !end) return "-";
-  return `${Math.max(1, Math.ceil((end.getTime() - start.getTime()) / DAY_IN_MS))} days`;
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
   const dispatch = useAppDispatch();
+
+  const supervisors = useAppSelector((state: any) => state.user.supervisors);
   const sessions = useAppSelector((state) => state.session.sessions);
+  const groups = useAppSelector((state) => state.group.allGroups);
 
   const [loading, setLoading] = useState(true);
   const [sessionEditorMode, setSessionEditorMode] = useState<
@@ -175,9 +81,54 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
   const [sessionForDelete, setSessionforDelete] = useState<string | null>(null);
 
   useEffect(() => {
+    dispatch(getSupervisors())
+      .unwrap()
+      .finally(() => setLoading(false));
+  }, [dispatch]);
+
+  useEffect(() => {
     dispatch(getSessions())
       .unwrap()
       .finally(() => setLoading(false));
+  }, [dispatch]);
+
+  const activeProjectsCount = groups.filter((g: any) => g.status === "APPROVED" || g.status === "COMPLETED").length;
+  const pendingApprovalsCount = groups.filter((g: any) => g.status === "PENDING_SUPERVISOR").length;
+  
+  const missedDeadlinesCount = groups.reduce((acc: number, group: any) => {
+    const missed = group.milestones?.filter((m: any) => {
+      if (!m.deadline) return false;
+      const isPast = new Date(m.deadline) < new Date();
+      return isPast && (m.status === "PENDING" || m.status === "REJECTED");
+    }).length || 0;
+    return acc + missed;
+  }, 0);
+
+  const metrics = [
+    {
+      title: "Active Projects",
+      value: activeProjectsCount,
+      icon: FolderGit2,
+    },
+    {
+      title: "Supervisors",
+      value: supervisors.length,
+      icon: Users,
+    },
+    {
+      title: "Pending Approvals",
+      value: pendingApprovalsCount,
+      icon: ClipboardCheck,
+    },
+    {
+      title: "Missed Deadlines",
+      value: missedDeadlinesCount,
+      icon: AlertTriangle,
+    },
+  ];
+
+  useEffect(() => {
+    dispatch(getAllGroups());
   }, [dispatch]);
 
   // ── Early returns ──────────────────────────────────────────────────────────
@@ -246,14 +197,10 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
                 </div>
               </CardHeader>
               <CardContent className="flex justify-between space-y-3">
-                <p className="text-3xl font-bold leading-none">{item.value}</p>
+                <p className="text-3xl font-bold leading-none">
+                  {item.value}
+                </p>
                 <div className="flex items-center gap-2 text-xs">
-                  {item.trend === "up" ? (
-                    <TrendingUp className="size-3.5 text-emerald-500" />
-                  ) : (
-                    <TrendingDown className="size-3.5 text-amber-500" />
-                  )}
-                  <p className="text-muted-foreground">{item.delta}</p>
                 </div>
               </CardContent>
             </Card>
@@ -261,8 +208,14 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
         })}
       </div>
 
-      {/* Sessions Card */}
-      <Card className="border-border/70 bg-linear-to-br from-card via-card to-primary/5 shadow-lg/10">
+      <Tabs defaultValue="sessions" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+          <TabsTrigger value="sessions" className="font-semibold">Sessions Overview</TabsTrigger>
+          <TabsTrigger value="groups" className="font-semibold">Groups Directory</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <Card className="border-border/70 bg-linear-to-br from-card via-card to-primary/5 shadow-lg/10">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-xl">
@@ -303,6 +256,7 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {sessions.map((session: Session, index: number) => {
+                if (!session) return null;
                 const lifecycle = getSessionLifecycle(session);
                 const activation = getActivationState(session);
 
@@ -441,168 +395,23 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
           )}
         </CardContent>
       </Card>
+      </TabsContent>
 
-      {/* Session Detail Dialog */}
-      <Dialog
-        open={Boolean(selectedSession)}
-        onOpenChange={(open) => {
-          if (!open) setSelectedSession(null);
-        }}
-      >
-        <DialogContent className="max-h-[85vh] overflow-y-auto p-0 sm:max-w-3xl">
-          {selectedSession && (
-            <>
-              <div className="border-b bg-linear-to-r from-primary/15 via-primary/5 to-transparent px-6 py-5">
-                <DialogHeader className="text-left">
-                  <div className="flex items-start justify-between gap-3 pr-8">
-                    <div>
-                      <DialogTitle className="text-2xl tracking-tight">
-                        {selectedSession.name}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {selectedSession.department ||
-                          "Department not specified"}
-                      </DialogDescription>
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <Badge
-                        variant={getSessionLifecycle(selectedSession).variant}
-                        className="h-6 gap-1.5"
-                      >
-                        <Flag className="size-3.5" />
-                        {getSessionLifecycle(selectedSession).label}
-                      </Badge>
-                      <Badge
-                        variant={getActivationState(selectedSession).variant}
-                        className="h-6 gap-1.5"
-                      >
-                        {getActivationState(selectedSession).muted ? (
-                          <PauseCircle className="size-3.5" />
-                        ) : (
-                          <Flag className="size-3.5" />
-                        )}
-                        {getActivationState(selectedSession).label}
-                      </Badge>
-                    </div>
-                  </div>
-                </DialogHeader>
-              </div>
+      <TabsContent value="groups" className="mt-4">
+        <AllGroupsTable 
+          groups={groups} 
+          onDeleteGroup={async (groupId) => {
+            await dispatch(deleteGroup(groupId));
+          }} 
+        />
+      </TabsContent>
+    </Tabs>
 
-              <div className="space-y-5 px-6 py-5">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {[
-                    {
-                      label: "Start Date",
-                      value: formatDate(selectedSession.startDate),
-                    },
-                    {
-                      label: "End Date",
-                      value: formatDate(selectedSession.endDate),
-                    },
-                    {
-                      label: "Duration",
-                      value: getDurationDays(
-                        selectedSession.startDate,
-                        selectedSession.endDate,
-                      ),
-                    },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="rounded-xl border bg-background/80 p-3"
-                    >
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="mt-1 text-sm font-semibold">{value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <Card className="border-dashed shadow-none">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">
-                      Session Settings
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="grid gap-3 sm:grid-cols-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Min Group Size
-                      </p>
-                      <p className="font-medium">
-                        {selectedSession.settings?.minGroupSize ?? "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Max Group Size
-                      </p>
-                      <p className="font-medium">
-                        {selectedSession.settings?.maxGroupSize ?? "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Proposal Deadline
-                      </p>
-                      <p className="font-medium">
-                        {formatDate(selectedSession.settings?.proposalDeadline)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Flag className="size-4 text-primary" />
-                    <h3 className="text-sm font-semibold">Milestones</h3>
-                  </div>
-
-                  {(selectedSession.fypMilestones || []).length > 0 ? (
-                    <div className="space-y-2">
-                      {(selectedSession.fypMilestones || []).map(
-                        (milestone, index) => (
-                          <div
-                            key={
-                              milestone._id ||
-                              milestone.id ||
-                              `${milestone.title}-${index}`
-                            }
-                            className="rounded-xl border bg-background/80 p-3"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="font-medium">{milestone.title}</p>
-                              <Badge variant="outline">
-                                {formatDate(milestone.dueDate)}
-                              </Badge>
-                            </div>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              {milestone.description ||
-                                "No description provided"}
-                            </p>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                      No milestones configured for this session.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="border-t px-6 py-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedSession(null)}
-                >
-                  Close
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Extracted Session Details Modal */}
+      <SessionDetailsModal 
+        session={selectedSession} 
+        onClose={() => setSelectedSession(null)} 
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog

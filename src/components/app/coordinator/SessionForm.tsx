@@ -7,9 +7,14 @@ import {
   Plus,
   Settings2,
   Trash2,
+  UploadCloud,
+  FileIcon,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DEPARTMENTS } from "@/lib/constants";
 import {
   Card,
   CardContent,
@@ -22,11 +27,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Session } from "@/types/session.types";
+import RepositoryFactory from "@/repository/RepositoryFactory";
 
 export type SessionFormMilestone = {
   title: string;
   dueDate: string;
   description: string;
+  documentUrls: string[];
 };
 
 export type SessionFormValues = {
@@ -36,7 +43,7 @@ export type SessionFormValues = {
   endDate: string;
   maxGroupSize: string;
   minGroupSize: string;
-  proposalDeadline: string;
+  groupsPerSupervisor: string;
   fypMilestones: SessionFormMilestone[];
 };
 
@@ -48,29 +55,25 @@ export type SessionFormSubmitPayload = {
   settings: {
     maxGroupSize: number;
     minGroupSize: number;
-    proposalDeadline: string;
+    groupsPerSupervisor: number;
   };
   fypMilestones: SessionFormMilestone[];
 };
 
 export const DEFAULT_SESSION_FORM_VALUES: SessionFormValues = {
-  name: "Fall 2026",
-  department: "Computer Science",
-  startDate: "2026-09-01",
-  endDate: "2027-01-15",
-  maxGroupSize: "4",
-  minGroupSize: "2",
-  proposalDeadline: "2026-10-01",
+  name: "",
+  department: "",
+  startDate: "",
+  endDate: "",
+  maxGroupSize: "",
+  minGroupSize: "",
+  groupsPerSupervisor: "",
   fypMilestones: [
     {
-      title: "Proposal Submission",
-      dueDate: "2026-10-01",
-      description: "Submit project proposal",
-    },
-    {
-      title: "Mid Evaluation",
-      dueDate: "2026-11-15",
-      description: "Progress presentation",
+      title: "",
+      dueDate: "",
+      description: "",
+      documentUrls: [],
     },
   ],
 };
@@ -87,15 +90,16 @@ export function mapSessionToFormValues(session: Session): SessionFormValues {
     endDate: toDateInputValue(session.endDate),
     maxGroupSize: String(session.settings?.maxGroupSize ?? ""),
     minGroupSize: String(session.settings?.minGroupSize ?? ""),
-    proposalDeadline: toDateInputValue(session.settings?.proposalDeadline),
+    groupsPerSupervisor: String(session.settings?.groupsPerSupervisor ?? ""),
     fypMilestones:
       session.fypMilestones && session.fypMilestones.length > 0
         ? session.fypMilestones.map((milestone) => ({
             title: milestone.title || "",
             dueDate: toDateInputValue(milestone.dueDate),
             description: milestone.description || "",
+            documentUrls: milestone.documentUrls || [],
           }))
-        : [{ title: "", dueDate: "", description: "" }],
+        : [{ title: "", dueDate: "", description: "", documentUrls: [] }],
   };
 }
 
@@ -153,14 +157,14 @@ function SessionForm({
     form.department.trim() &&
     form.startDate &&
     form.endDate &&
-    form.proposalDeadline &&
+    form.groupsPerSupervisor &&
     isGroupSizeValid &&
     isMilestonesValid;
 
   const updateMilestone = (
     index: number,
     key: keyof SessionFormMilestone,
-    value: string,
+    value: any,
   ) => {
     setForm((previous) => ({
       ...previous,
@@ -175,7 +179,7 @@ function SessionForm({
       ...previous,
       fypMilestones: [
         ...previous.fypMilestones,
-        { title: "", dueDate: "", description: "" },
+        { title: "", dueDate: "", description: "", documentUrls: [] },
       ],
     }));
   };
@@ -200,16 +204,49 @@ function SessionForm({
       settings: {
         maxGroupSize: Number(form.maxGroupSize),
         minGroupSize: Number(form.minGroupSize),
-        proposalDeadline: form.proposalDeadline,
+        groupsPerSupervisor: Number(form.groupsPerSupervisor),
       },
       fypMilestones: form.fypMilestones.map((milestone) => ({
         title: milestone.title.trim(),
         dueDate: milestone.dueDate,
         description: milestone.description.trim(),
+        documentUrls: milestone.documentUrls,
       })),
     };
 
     await onSubmit(payload);
+  };
+
+  const handleFileUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      const uploadRepo = RepositoryFactory.get("upload");
+      const uploadPromises = files.map(file => uploadRepo.uploadDocument(file));
+      const results = await Promise.all(uploadPromises);
+      const newUrls = results.map(res => res.data.data.url);
+      
+      setForm((previous) => ({
+        ...previous,
+        fypMilestones: previous.fypMilestones.map((milestone, idx) =>
+          idx === index ? { ...milestone, documentUrls: [...(milestone.documentUrls || []), ...newUrls] } : milestone
+        ),
+      }));
+    } catch (err) {
+      console.error("Failed to upload documents", err);
+    }
+  };
+
+  const removeFile = (milestoneIndex: number, urlToRemove: string) => {
+    setForm((previous) => ({
+      ...previous,
+      fypMilestones: previous.fypMilestones.map((milestone, idx) =>
+        idx === milestoneIndex 
+          ? { ...milestone, documentUrls: milestone.documentUrls.filter(url => url !== urlToRemove) } 
+          : milestone
+      ),
+    }));
   };
 
   return (
@@ -247,18 +284,24 @@ function SessionForm({
 
               <div className="space-y-2">
                 <Label htmlFor="session-department">Department</Label>
-                <Input
-                  id="session-department"
-                  placeholder="Computer Science"
+                <Select
                   value={form.department}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      department: event.target.value,
-                    }))
+                  onValueChange={(val) =>
+                    setForm((previous) => ({ ...previous, department: val }))
                   }
                   disabled={isSubmitting}
-                />
+                >
+                  <SelectTrigger id="session-department" className="w-full">
+                    <SelectValue placeholder="Select Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEPARTMENTS.map((dept) => (
+                      <SelectItem key={dept.value} value={dept.value}>
+                        {dept.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -340,16 +383,16 @@ function SessionForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="proposal-deadline">Proposal Deadline</Label>
+                  <Label htmlFor="groups-per-supervisor">Groups Per Supervisor</Label>
                   <Input
-                    id="proposal-deadline"
-                    type="date"
-                    icon={<CalendarDays />}
-                    value={form.proposalDeadline}
+                    id="groups-per-supervisor"
+                    type="number"
+                    min={1}
+                    value={form.groupsPerSupervisor}
                     onChange={(event) =>
                       setForm((previous) => ({
                         ...previous,
-                        proposalDeadline: event.target.value,
+                        groupsPerSupervisor: event.target.value,
                       }))
                     }
                     disabled={isSubmitting}
@@ -373,7 +416,7 @@ function SessionForm({
               <div className="space-y-3">
                 {form.fypMilestones.map((milestone, index) => (
                   <div
-                    key={`${milestone.title}-${index}`}
+                    key={`milestone-${index}`}
                     className="space-y-3 rounded-lg border border-border/60 p-3"
                   >
                     <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
@@ -429,6 +472,55 @@ function SessionForm({
                         }
                         disabled={isSubmitting}
                       />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>Documents & Attachments (Optional)</Label>
+                      
+                      {/* Modern File Upload Dropzone styled input */}
+                      <div className="relative flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-xl border-border bg-card/50 hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden group">
+                        <input
+                          id={`milestone-file-${index}`}
+                          type="file"
+                          multiple
+                          onChange={(e) => handleFileUpload(index, e)}
+                          disabled={isSubmitting}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                        />
+                        <div className="flex flex-col items-center justify-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
+                          <UploadCloud className="w-6 h-6 mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
+                            Click or drag files to upload
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Display Uploaded Files as Modern Chips */}
+                      {milestone.documentUrls && milestone.documentUrls.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {milestone.documentUrls.map((url, urlIndex) => (
+                            <div 
+                              key={`${url}-${urlIndex}`}
+                              className="flex items-center gap-2 pl-2 pr-1 py-1 text-xs bg-primary/10 text-primary border border-primary/20 rounded-full group"
+                            >
+                              <FileIcon className="w-3 h-3" />
+                              <span className="max-w-[120px] truncate" title={url.split('/').pop()}>
+                                {url.split('/').pop() || 'Document'}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-5 h-5 p-0 rounded-full hover:bg-primary/20 text-primary"
+                                onClick={() => removeFile(index, url)}
+                                disabled={isSubmitting}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {form.fypMilestones.length > 1 ? (

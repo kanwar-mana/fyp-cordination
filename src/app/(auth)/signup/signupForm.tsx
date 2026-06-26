@@ -18,14 +18,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TabNavigation from "@/components/TabNavigation";
+import { DEPARTMENTS } from "@/lib/constants";
 
 interface SignupFormProps {
   setIsVerificationCodeSent: (value: boolean) => void;
@@ -48,20 +48,13 @@ export default function SignupForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [department, setDepartment] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"student" | "supervisor" | "coordinator">(
     "student",
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<any | null>(null);
-
-  const departments: Department[] = [
-    { label: "Computer Science", value: "computer-science" },
-    { label: "Software Engineering", value: "software-engineering" },
-    { label: "Information Technology", value: "information-technology" },
-    { label: "Electrical Engineering", value: "electrical-engineering" },
-    { label: "Mechanical Engineering", value: "mechanical-engineering" },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +72,13 @@ export default function SignupForm({
       setIsLoading(false);
       return;
     }
-    const payload = { fullName, email, password, role };
+    if (!department) {
+      setError("Please select a department");
+      setIsLoading(false);
+      return;
+    }
+    
+    const payload = { fullName, email, password, role, department };
     console.log("Signup payload:", payload);
     await dispatch(signup(payload))
       .unwrap()
@@ -151,30 +150,18 @@ export default function SignupForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
-              <Combobox
-                items={departments}
-                itemToStringValue={(department: { label: string }) =>
-                  department.label
-                }
-              >
-                <ComboboxInput
-                  id="department"
-                  size="lg"
-                  icon={<Building />}
-                  placeholder="Select a department"
-                />
-                <ComboboxContent size="lg">
-                  <ComboboxEmpty>No items found.</ComboboxEmpty>
-                  <ComboboxList>
-                    {(department) => (
-                      <ComboboxItem key={department.value} value={department}>
-                        {department.label}
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
+              <Select onValueChange={setDepartment} value={department} required>
+                <SelectTrigger className="h-12! w-full text-sm bg-input/20 border-input shadow-sm">
+                  <SelectValue placeholder="Select a department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((dept) => (
+                    <SelectItem key={dept.value} value={dept.value}>
+                      {dept.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
