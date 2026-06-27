@@ -44,3 +44,15 @@ export const getFileName = (url: string, fallback = 'Document'): string => {
     return fallback;
   }
 };
+
+export const isImageFile = (url: string): boolean => {
+  const ext = url.split('.').pop()?.split('?')[0]?.toLowerCase() || '';
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+};
+
+export const getDownloadUrl = (url: string): string => {
+  if (url.includes("/upload/")) {
+    return url.replace("/upload/", "/upload/fl_attachment/");
+  }
+  return url;
+};

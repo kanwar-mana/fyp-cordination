@@ -26,6 +26,7 @@ const studentNavItems = [
 const supervisorNavItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/dashboard/projects", icon: FolderGit2 },
+  { label: "Evaluations", href: "/dashboard/evaluations", icon: FileText },
   { label: "Students", href: "/dashboard/students", icon: Users },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];

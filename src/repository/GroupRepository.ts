@@ -11,6 +11,7 @@ import {
   RespondSupervisorRequestPayload,
   SubmitMilestonePayload,
   GradeMilestonePayload,
+  UpdateGroupPayload,
 } from "@/types/group.types";
 
 const GROUP_BASE = "/groups";
@@ -21,14 +22,20 @@ export default {
     return apiClient.post<ApiResponse<Group>>(`${GROUP_BASE}/create-group`, payload);
   },
 
+  // Update group details
+  updateGroupDetails(payload: UpdateGroupPayload) {
+    const { groupId, ...updateData } = payload;
+    return apiClient.put<ApiResponse<Group>>(`${GROUP_BASE}/${groupId}/update`, updateData);
+  },
+
   // Get all groups (Coordinator)
   getAllGroups() {
     return apiClient.get<ApiResponse<Group[]>>(`${GROUP_BASE}/all-groups`);
   },
 
   // Get available students to invite
-  getAvailableStudents() {
-    return apiClient.get<ApiResponse<User[]>>(`${GROUP_BASE}/available-students`);
+  getAvailableStudents(search?: string) {
+    return apiClient.get<ApiResponse<User[]>>(`${GROUP_BASE}/available-students`, { params: { search } });
   },
 
   // Get current student's pending group invitations
@@ -72,8 +79,8 @@ export default {
   },
 
   // Get available supervisors (Leader)
-  getSupervisors() {
-    return apiClient.get<ApiResponse<User[]>>(`${GROUP_BASE}/supervisors`);
+  getSupervisors(search?: string) {
+    return apiClient.get<ApiResponse<User[]>>(`${GROUP_BASE}/supervisors`, { params: { search } });
   },
 
   // Send request to supervisor
@@ -104,5 +111,10 @@ export default {
   // Grade a milestone
   gradeMilestone(groupId: string, milestoneId: string, payload: GradeMilestonePayload) {
     return apiClient.post<ApiResponse<Group>>(`${GROUP_BASE}/${groupId}/milestones/${milestoneId}/grade`, payload);
+  },
+
+  // Assign internal evaluator
+  assignInternalEvaluator(groupId: string, payload: { internalEvaluatorId: string }) {
+    return apiClient.patch<ApiResponse<Group>>(`${GROUP_BASE}/${groupId}/assign-evaluator`, payload);
   },
 };

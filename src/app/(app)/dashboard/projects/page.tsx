@@ -5,7 +5,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { getGroup } from "@/store/group/groupThunk";
 
 import SupervisorProjects from "@/components/app/supervisor/SupervisorProjects";
-import { Loader2 } from "lucide-react";
+import { Loader2, FolderKanban } from "lucide-react";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -33,7 +33,16 @@ export default function DashboardPage() {
   }
 
   if (!currentGroup) {
-    return <div className="p-8 text-center text-muted-foreground">No project details found...</div>;
+    return (
+      <div className="container mx-auto h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
+        <FolderKanban className="w-16 h-16 mb-4 text-muted/40" />
+        <h2 className="text-xl font-semibold text-foreground mb-2">No Project Found</h2>
+        <p className="text-sm">You haven't created or joined any project yet.</p>
+        <p className="text-xs mt-2 text-muted-foreground/80">
+          Go to your Dashboard to create a group or check your invitations.
+        </p>
+      </div>
+    );
   }
 
   return (

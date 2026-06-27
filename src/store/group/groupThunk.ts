@@ -25,6 +25,27 @@ export const createGroup = createAsyncThunk(
   }
 );
 
+export const updateGroupDetails = createAsyncThunk(
+  "groups/updateGroupDetails",
+  async (payload: any, thunkAPI) => {
+    try {
+      const response = await groups.updateGroupDetails(payload);
+      toast({
+        title: "Success",
+        description: "Group details updated successfully.",
+      });
+      return response.data.data;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to update group.",
+        variant: "destructive",
+      });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
 export const getAllGroups = createAsyncThunk(
   "groups/getAllGroups",
   async (_, thunkAPI) => {
@@ -51,9 +72,9 @@ export const getGroup = createAsyncThunk(
 
 export const getAvailableStudents = createAsyncThunk(
   "groups/getAvailableStudents",
-  async (_, thunkAPI) => {
+  async (search: string | undefined, thunkAPI) => {
     try {
-      const response = await groups.getAvailableStudents();
+      const response = await groups.getAvailableStudents(search);
       return response.data.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error?.response?.data);
@@ -63,9 +84,9 @@ export const getAvailableStudents = createAsyncThunk(
 
 export const getSupervisors = createAsyncThunk(
   "groups/getSupervisors",
-  async (_, thunkAPI) => {
+  async (search: string | undefined, thunkAPI) => {
     try {
-      const response = await groups.getSupervisors();
+      const response = await groups.getSupervisors(search);
       return response.data.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error?.response?.data);
@@ -254,6 +275,27 @@ export const getMySentSupervisorRequests = createAsyncThunk(
       const response = await groups.getMySentSupervisorRequests();
       return response.data.data;
     } catch (error: any) {
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
+export const assignInternalEvaluator = createAsyncThunk(
+  "groups/assignInternalEvaluator",
+  async (payload: { groupId: string; internalEvaluatorId: string }, thunkAPI) => {
+    try {
+      const response = await groups.assignInternalEvaluator(payload.groupId, { internalEvaluatorId: payload.internalEvaluatorId });
+      toast({
+        title: "Success",
+        description: "Internal evaluator assigned successfully.",
+      });
+      return response.data.data;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to assign internal evaluator.",
+        variant: "destructive",
+      });
       return thunkAPI.rejectWithValue(error?.response?.data);
     }
   }

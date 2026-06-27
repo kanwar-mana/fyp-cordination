@@ -9,6 +9,7 @@ import {
   getMyInvitations,
   getMySupervisorRequests,
   createGroup,
+  updateGroupDetails,
   deleteGroup,
   submitMilestone,
   gradeMilestone,
@@ -20,6 +21,7 @@ import {
   sendSupervisorRequest,
   cancelSupervisorRequest,
   getMySentSupervisorRequests,
+  assignInternalEvaluator,
 } from "./groupThunk";
 
 interface GroupState {
@@ -80,6 +82,12 @@ const groupSlice = createSlice({
         state.currentGroup = action.payload;
         state.allGroups.push(action.payload);
       })
+      // updateGroupDetails
+      .addCase(updateGroupDetails.fulfilled, (state, action) => {
+        state.currentGroup = action.payload;
+        const index = state.allGroups.findIndex(g => g._id === action.payload._id);
+        if (index !== -1) state.allGroups[index] = action.payload;
+      })
       // getAvailableStudents
       .addCase(getAvailableStudents.fulfilled, (state, action) => {
         state.availableStudents = action.payload;
@@ -111,6 +119,10 @@ const groupSlice = createSlice({
       })
       .addCase(gradeMilestone.fulfilled, (state, action) => {
         state.currentGroup = action.payload;
+        const index = state.allGroups.findIndex(g => g._id === action.payload._id);
+        if (index !== -1) state.allGroups[index] = action.payload;
+      })
+      .addCase(assignInternalEvaluator.fulfilled, (state, action) => {
         const index = state.allGroups.findIndex(g => g._id === action.payload._id);
         if (index !== -1) state.allGroups[index] = action.payload;
       })
