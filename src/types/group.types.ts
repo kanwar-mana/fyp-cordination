@@ -1,0 +1,116 @@
+import { User } from "./auth.types";
+import { Session } from "./session.types";
+
+export type ProjectDomain =
+  | "AI"
+  | "Web"
+  | "IoT"
+  | "Blockchain"
+  | "Cloud"
+  | "Cybersecurity"
+  | "Other";
+
+export type GroupStatus =
+  | "DRAFT"
+  | "PENDING_SUPERVISOR"
+  | "APPROVED"
+  | "REJECTED"
+  | "COMPLETED";
+
+export type MilestoneStatus = "PENDING" | "SUBMITTED" | "APPROVED" | "REJECTED";
+
+export interface ProjectDetails {
+  title: string;
+  description: string;
+  domain: ProjectDomain;
+  technologies: string[];
+  proposalDocument?: string;
+}
+
+export interface Milestone {
+  _id: string;
+  title: string;
+  description?: string;
+  deadline: string;
+  documentUrls?: string[];
+  status: MilestoneStatus;
+  submissionUrls?: string[];
+  studentMessage?: string;
+  remarks?: string;
+  grade?: string;
+}
+
+export interface Group {
+  _id: string;
+  session: Session;
+  leader: User;
+  department: string;
+  members: User[];
+  requiredMembers: number;
+  supervisor?: User | null;
+  projectDetails: ProjectDetails;
+  status: GroupStatus;
+  milestones: Milestone[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Request Models
+export type RequestType = "GROUP_INVITATION" | "SUPERVISOR_REQUEST";
+export type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+
+export interface GroupRequest {
+  _id: string;
+  type: RequestType;
+  sender: User;
+  receiver: User;
+  group: Group;
+  status: RequestStatus;
+  message?: string;
+  remarks?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Payloads
+export interface CreateGroupPayload {
+  sessionId: string;
+  requiredMembers: number;
+  projectDetails: ProjectDetails;
+}
+
+export interface RemoveMemberPayload {
+  groupId: string;
+  studentId: string;
+}
+
+export interface InviteStudentPayload {
+  groupId: string;
+  studentId: string;
+}
+
+export interface RespondInvitationPayload {
+  requestId: string;
+  action: "ACCEPTED" | "REJECTED";
+}
+
+export interface SendSupervisorRequestPayload {
+  groupId: string;
+  supervisorId: string;
+}
+
+export interface RespondSupervisorRequestPayload {
+  requestId: string;
+  action: "ACCEPTED" | "REJECTED";
+  remarks?: string;
+}
+
+export interface SubmitMilestonePayload {
+  submissionLink: string;
+}
+
+export interface GradeMilestonePayload {
+  action: "APPROVED" | "REJECTED";
+  remarks?: string;
+  grade?: string;
+}

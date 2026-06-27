@@ -5,10 +5,17 @@ import { Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -24,7 +31,6 @@ import {
 } from "@/components/ui/input-otp";
 import { useAppDispatch } from "@/store/hooks";
 import { verifyEmail } from "@/store/auth/authThunk";
-import { verifyEmailRequest } from "@/types/auth.types";
 
 export const title = "Email Verification Flow";
 
@@ -34,7 +40,15 @@ const formSchema = z.object({
   }),
 });
 
-export default function OtpInput({ email, onVerification = () => {} }: any) {
+interface OtpInputProps {
+  email: string;
+  onVerification?: () => void;
+}
+
+export default function OtpInput({
+  email,
+  onVerification = () => {},
+}: OtpInputProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(false);
@@ -52,62 +66,82 @@ export default function OtpInput({ email, onVerification = () => {} }: any) {
     await dispatch(verifyEmail(payload))
       .unwrap()
       .then(() => {
+        onVerification();
         router.push("/login");
       })
       .finally(() => setIsVerifying(false));
   }
 
   return (
-    <div className="w-full max-w-md space-y-6">
-      <div className="flex flex-col items-center space-y-2 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-          <Mail className="h-6 w-6 text-primary" />
+    <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
+      <CardHeader className="mb-6">
+        <CardTitle className="text-3xl sm:text-4xl font-bold">
+          Verify Email
+        </CardTitle>
+        <CardDescription className="font-medium text-muted-foreground">
+          Enter the 6-digit code sent to your email.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <div className="mb-6 rounded-md bg-primary/10 px-4 py-3 text-sm text-primary flex items-center gap-2">
+          <Mail className="h-4 w-4" />
+          <span className="truncate">Verification code sent to {email}</span>
         </div>
-        <h2 className="text-2xl font-semibold">Check your email</h2>
-        <p className="text-sm text-muted-foreground">
-          We sent a verification code to{" "}
-          <span className="font-medium">{email}</span>
-        </p>
-      </div>
-      <Form {...form}>
-        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <FormField
-            control={form.control}
-            name="code"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <div className="flex justify-center">
-                    <InputOTP maxLength={6} {...field}>
-                      <InputOTPGroup>
-                        <InputOTPSlot className="bg-background" index={0} />
-                        <InputOTPSlot className="bg-background" index={1} />
-                        <InputOTPSlot className="bg-background" index={2} />
-                      </InputOTPGroup>
-                      <InputOTPSeparator />
-                      <InputOTPGroup>
-                        <InputOTPSlot className="bg-background" index={3} />
-                        <InputOTPSlot className="bg-background" index={4} />
-                        <InputOTPSlot className="bg-background" index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button className="w-full" disabled={isVerifying} type="submit">
-            {isVerifying ? "Verifying..." : "Verify Email"}
+
+        <Form {...form}>
+          <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+            <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="flex justify-center">
+                      <InputOTP maxLength={6} {...field}>
+                        <InputOTPGroup>
+                          <InputOTPSlot className="bg-input/20" index={0} />
+                          <InputOTPSlot className="bg-input/20" index={1} />
+                          <InputOTPSlot className="bg-input/20" index={2} />
+                        </InputOTPGroup>
+                        <InputOTPSeparator />
+                        <InputOTPGroup>
+                          <InputOTPSlot className="bg-input/20" index={3} />
+                          <InputOTPSlot className="bg-input/20" index={4} />
+                          <InputOTPSlot className="bg-input/20" index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              className="w-full text-md font-semibold shadow-[0_0_10px_primary]"
+              disabled={isVerifying}
+              type="submit"
+              size="lg"
+            >
+              {isVerifying ? "Verifying..." : "Verify Email"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+
+      <CardFooter>
+        <div className="w-full text-center text-sm text-muted-foreground">
+          Didn&apos;t receive the email?{" "}
+          <Button
+            className="h-auto p-0 font-normal"
+            type="button"
+            variant="link"
+          >
+            Resend code
           </Button>
-        </form>
-      </Form>
-      <div className="text-center text-sm text-muted-foreground">
-        Didn't receive the email?{" "}
-        <Button className="h-auto p-0 font-normal" type="button" variant="link">
-          Resend code
-        </Button>
-      </div>
-    </div>
+        </div>
+      </CardFooter>
+    </Card>
   );
 }

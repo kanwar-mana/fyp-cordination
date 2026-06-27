@@ -8,7 +8,7 @@ import { signup } from "@/store/auth/authThunk";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LockIcon, Mail, User2, Building } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,12 +17,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TabNavigation from "@/components/TabNavigation";
+import { DEPARTMENTS } from "@/lib/constants";
+
+interface SignupFormProps {
+  setIsVerificationCodeSent: (value: boolean) => void;
+  setUserEmail: (value: string) => void;
+}
 
 export default function SignupForm({
   setIsVerificationCodeSent,
   setUserEmail,
-}: any) {
+}: SignupFormProps) {
+  type Department = {
+    label: string;
+    value: string;
+  };
+
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -30,9 +48,10 @@ export default function SignupForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [department, setDepartment] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"student" | "supervisor" | "coordinator">(
-    "student"
+    "student",
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<any | null>(null);
@@ -53,7 +72,13 @@ export default function SignupForm({
       setIsLoading(false);
       return;
     }
-    const payload = { fullName, email, password, role };
+    if (!department) {
+      setError("Please select a department");
+      setIsLoading(false);
+      return;
+    }
+    
+    const payload = { fullName, email, password, role, department };
     console.log("Signup payload:", payload);
     await dispatch(signup(payload))
       .unwrap()
@@ -69,16 +94,20 @@ export default function SignupForm({
 
   return (
     <div className="flex items-center justify-center w-full">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Join the FYP Coordination System</CardDescription>
+      <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
+        <CardHeader className="mb-6">
+          <CardTitle className="text-3xl sm:text-4xl font-bold">
+            Create Account
+          </CardTitle>
+          <CardDescription className="font-medium text-muted-foreground">
+            Join the FYP Coordination System
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error?.message}
+                {error?.message || error}
               </div>
             )}
             <TabNavigation
@@ -92,29 +121,47 @@ export default function SignupForm({
                 setRole(value as "student" | "supervisor" | "coordinator")
               }
             />
-            <div className="space-y-2">
+            <div className="space-y-2 mb-6">
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Enter your full name"
                 value={fullName}
                 onChange={(e) => setName(e.target.value)}
                 required
                 disabled={isLoading}
+                size="lg"
+                icon={<User2 />}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 mb-6">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="Enter your university email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                size="lg"
+                icon={<Mail />}
               />
+            </div>
+            <div className="space-y-2">
+              <Select onValueChange={setDepartment} value={department} required>
+                <SelectTrigger className="h-12! w-full text-sm bg-input/20 border-input shadow-sm">
+                  <SelectValue placeholder="Select a department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((dept) => (
+                    <SelectItem key={dept.value} value={dept.value}>
+                      {dept.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -127,13 +174,16 @@ export default function SignupForm({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  size="lg"
+                  icon={<LockIcon />}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-5 top-0 h-full p-0! hover:bg-transparent"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -156,16 +206,26 @@ export default function SignupForm({
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={isLoading}
+                size="lg"
+                icon={<LockIcon />}
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 mt-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+          <CardFooter className="flex flex-col space-y-4 mt-8">
+            <Button
+              type="submit"
+              className="w-full text-md font-semibold shadow-[0_0_10px_primary]"
+              disabled={isLoading}
+              size="lg"
+            >
               {isLoading ? "Creating account..." : "Create Account"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link
+                href="/login"
+                className="font-semibold text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </p>

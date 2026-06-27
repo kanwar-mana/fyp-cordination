@@ -21,6 +21,8 @@ const FORGOT_PASSWORD = `${AUTH_BASE}/forgot-password`;
 const RESET_PASSWORD = `${AUTH_BASE}/reset-password`;
 const UPDATE_PASSWORD = `${AUTH_BASE}/update-password`;
 
+
+
 export default {
   signup(payload: SignupRequest) {
     return apiClient.post<AuthResponse>(SIGNUP, payload);
@@ -56,4 +58,5 @@ export default {
   updatePassword(payload: { currentPassword: string; newPassword: string }) {
     return apiClient.post<ApiResponse>(UPDATE_PASSWORD, payload);
   },
+
 };

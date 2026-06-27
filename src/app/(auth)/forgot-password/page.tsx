@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Mail, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle, User2 } from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import {
   Card,
@@ -15,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
 import { forgotPassword } from "@/store/auth/authThunk";
 
 export default function ForgotPasswordPage() {
@@ -41,93 +40,100 @@ export default function ForgotPasswordPage() {
 
   if (isEmailSent) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-            <CardTitle className="text-2xl font-bold">
-              Check Your Email
-            </CardTitle>
-            <CardDescription>
-              We&apos;ve sent a password reset link to
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="font-medium text-primary break-all">{email}</p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Click the link in the email to reset your password. If you
-              don&apos;t see the email, check your spam folder.
-            </p>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsEmailSent(false)}
-            >
-              Try different email
-            </Button>
-            <Link href="/login" className="w-full">
-              <Button variant="ghost" className="w-full">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Login
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex-3 w-full justify-center">
+          <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
+            <CardHeader className="mb-6">
+              <CardTitle className="text-3xl sm:text-4xl font-bold">
+                Check Your Email
+              </CardTitle>
+              <CardDescription className="font-medium text-muted-foreground">
+                We&apos;ve sent a password reset link to
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md bg-green-500/10 px-4 py-3 text-sm text-green-600 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Link sent successfully
+              </div>
+              <p className="mt-4 font-medium text-primary break-all">{email}</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Click the link in the email to reset your password. If you
+                don&apos;t see the email, check your spam folder.
+              </p>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4 mt-8">
+              <Button
+                variant="outline"
+                className="w-full"
+                size="lg"
+                onClick={() => setIsEmailSent(false)}
+              >
+                Try different email
               </Button>
-            </Link>
-          </CardFooter>
-        </Card>
+              <Link href="/login" className="w-full">
+                <Button variant="ghost" className="w-full" size="lg">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Login
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+        <div className="hidden lg:flex flex-4 w-full min-h-screen bg-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <Mail className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
-          <CardDescription>
-            No worries! Enter your email and we&apos;ll send you a reset link.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex-3 w-full justify-center">
+        <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
+          <CardHeader className="mb-6">
+            <CardTitle className="text-3xl sm:text-4xl font-bold">
+              Forgot Password?
+            </CardTitle>
+            <CardDescription className="font-medium text-muted-foreground">
+              No worries! Enter your email and we&apos;ll send you a reset link.
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 mb-6">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your university email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  size="lg"
+                  icon={<User2 />}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4 mt-8">
+              <Button
+                type="submit"
+                className="w-full text-md font-semibold shadow-[0_0_10px_primary]"
                 disabled={isLoading}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4 mt-6">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Spinner />
-                  Sending...
-                </>
-              ) : (
-                "Send Reset Link"
-              )}
-            </Button>
-            <Link href="/login" className="w-full">
-              <Button variant="ghost" className="w-full">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Login
+                size="lg"
+              >
+                {isLoading ? "Sending..." : "Send Reset Link"}
               </Button>
-            </Link>
-          </CardFooter>
-        </form>
-      </Card>
+              <Link href="/login" className="w-full">
+                <Button variant="ghost" className="w-full" size="lg">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Login
+                </Button>
+              </Link>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+      <div className="hidden lg:flex flex-4 w-full min-h-screen bg-primary" />
     </div>
   );
 }
