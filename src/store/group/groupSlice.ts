@@ -19,6 +19,7 @@ import {
   leaveGroup,
   sendSupervisorRequest,
   cancelSupervisorRequest,
+  getMySentSupervisorRequests,
 } from "./groupThunk";
 
 interface GroupState {
@@ -28,6 +29,7 @@ interface GroupState {
   supervisors: User[];
   myInvitations: GroupRequest[];
   mySupervisorRequests: GroupRequest[];
+  mySentSupervisorRequests: GroupRequest[];
   isLoading: boolean;
   error: string | null;
 }
@@ -39,6 +41,7 @@ const initialState: GroupState = {
   supervisors: [],
   myInvitations: [],
   mySupervisorRequests: [],
+  mySentSupervisorRequests: [],
   isLoading: false,
   error: null,
 };
@@ -141,7 +144,15 @@ const groupSlice = createSlice({
         // Optimistically update some state if needed, or simply refetch
       })
       .addCase(cancelSupervisorRequest.fulfilled, (state, action) => {
-        // Optimistically update some state if needed, or simply refetch
+        state.mySupervisorRequests = state.mySupervisorRequests.filter(
+          (r) => r._id !== action.payload
+        );
+        state.mySentSupervisorRequests = state.mySentSupervisorRequests.filter(
+          (r) => r._id !== action.payload
+        );
+      })
+      .addCase(getMySentSupervisorRequests.fulfilled, (state, action) => {
+        state.mySentSupervisorRequests = action.payload;
       });
   },
 });

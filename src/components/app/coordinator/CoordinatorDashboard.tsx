@@ -52,6 +52,7 @@ import SessionDetailsModal from "./SessionDetailsModal";
 import { getSessionLifecycle, getActivationState, formatDateRange } from "@/lib/session.utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AllGroupsTable from "@/components/groups/AllGroupsTable";
+import AllowedSupervisorsList from "./AllowedSupervisorsList";
 import { getAllGroups, deleteGroup } from "@/store/group/groupThunk";
 import { getSupervisors } from "@/store/user/userThunk";
 import type { User } from "@/types/auth.types";
@@ -209,9 +210,10 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
       </div>
 
       <Tabs defaultValue="sessions" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 md:w-[600px]">
           <TabsTrigger value="sessions" className="font-semibold">Sessions Overview</TabsTrigger>
           <TabsTrigger value="groups" className="font-semibold">Groups Directory</TabsTrigger>
+          <TabsTrigger value="supervisors" className="font-semibold">Supervisors</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sessions" className="space-y-4">
@@ -404,6 +406,10 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
             await dispatch(deleteGroup(groupId));
           }} 
         />
+      </TabsContent>
+
+      <TabsContent value="supervisors" className="mt-4">
+        <AllowedSupervisorsList />
       </TabsContent>
     </Tabs>
 

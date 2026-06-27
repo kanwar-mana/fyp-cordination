@@ -12,10 +12,11 @@ import { formatDate, relativeTime, getRowType, isMilestoneLocked } from "./miles
 interface MilestoneListProps {
   group: Group;
   isLeader: boolean;
+  isSupervisor?: boolean;
   showStats?: boolean;
 }
 
-export const MilestoneList = ({ group, isLeader, showStats = true }: MilestoneListProps) => {
+export const MilestoneList = ({ group, isLeader, isSupervisor = false, showStats = true }: MilestoneListProps) => {
   const [selected, setSelected] = useState<Milestone | null>(null);
 
   const milestones: Milestone[] = group.milestones || [];
@@ -54,6 +55,7 @@ export const MilestoneList = ({ group, isLeader, showStats = true }: MilestoneLi
         milestone={selected}
         groupId={group._id}
         isLeader={isLeader}
+        isSupervisor={isSupervisor}
         groupApproved={groupApproved}
         onBack={() => setSelected(null)}
         onSubmitSuccess={() => setSelected(null)}

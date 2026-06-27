@@ -10,6 +10,11 @@ import {
   CheckCircle2,
   UserPlus,
   Trash2,
+  Loader2,
+  LogOut,
+  UserMinus,
+  ShieldQuestion,
+  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -19,10 +24,21 @@ import { Group } from "@/types/group.types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { formatDate } from "@/components/milestones/milestoneUtils";
 import { InviteMembers } from "@/components/groups/InviteMembers";
-import { RequestSupervisor } from "@/components/groups/RequestSupervisor";
+import { RequestSupervisor } from "@/components/app/student/RequestSupervisor";
 import { removeMember, leaveGroup, deleteGroup } from "@/store/group/groupThunk";
-import { Loader2, LogOut, UserMinus, ShieldQuestion } from "lucide-react";
+import { checkAuth } from "@/store/auth/authThunk";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // ─── Shared section card ────────────────────────────────────────────────────
 const InfoCard = ({
@@ -70,6 +86,7 @@ const statusStyle = (status: string) => {
 // ─── Main component ────────────────────────────────────────────────────────
 export const Project = ({ group }: { group: Group }) => {
   const { user } = useAppSelector((s) => s.auth);
+  const { mySentSupervisorRequests } = useAppSelector((s) => s.group); 
   const dispatch = useAppDispatch();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -84,11 +101,20 @@ export const Project = ({ group }: { group: Group }) => {
   const canRequestSupervisor = isLeader && !groupNotFull && (isPendingSupervisor || isRejected);
   const canDeleteGroup = isLeader && (isPendingSupervisor || isRejected);
 
+  const rejectedRequest = mySentSupervisorRequests
+    ?.filter((r: any) => (r.group?._id || r.group) === group._id && r.status === "REJECTED")
+    ?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())?.[0];
+
+  const approvedRequest = mySentSupervisorRequests
+    ?.filter((r: any) => (r.group?._id || r.group) === group._id && r.status === "ACCEPTED")
+    ?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())?.[0];
+
   // ── Handlers ────────────────────────────────────────────────────────────
   const handleRemove = async (studentId: string) => {
     setLoadingAction(`remove-${studentId}`);
     try {
       await dispatch(removeMember({ groupId: group._id, studentId })).unwrap();
+      if (studentId === user?._id) dispatch(checkAuth());
     } finally {
       setLoadingAction(null);
     }
@@ -98,6 +124,7 @@ export const Project = ({ group }: { group: Group }) => {
     setLoadingAction("leave");
     try {
       await dispatch(leaveGroup(group._id)).unwrap();
+      dispatch(checkAuth());
     } finally {
       setLoadingAction(null);
     }
@@ -107,6 +134,7 @@ export const Project = ({ group }: { group: Group }) => {
     setLoadingAction("delete");
     try {
       await dispatch(deleteGroup(group._id)).unwrap();
+      dispatch(checkAuth());
     } finally {
       setLoadingAction(null);
       setConfirmDelete(false);
@@ -128,45 +156,50 @@ export const Project = ({ group }: { group: Group }) => {
 
           {/* Delete Group — shown for leader only when deletable */}
           {canDeleteGroup && (
-            <div className="flex items-center gap-2 shrink-0">
-              {confirmDelete ? (
-                <>
-                  <span className="text-xs text-muted-foreground">Are you sure?</span>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="h-8 text-xs gap-1.5"
-                    disabled={loadingAction === "delete"}
-                    onClick={handleDeleteGroup}
-                  >
-                    {loadingAction === "delete" ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-3.5 h-3.5" />
-                    )}
-                    Confirm Delete
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 text-xs"
-                    onClick={() => setConfirmDelete(false)}
-                  >
-                    Cancel
-                  </Button>
-                </>
-              ) : (
+            <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+              <AlertDialogTrigger asChild>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 text-xs gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => setConfirmDelete(true)}
+                  className="h-8 text-xs gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive shrink-0"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Delete Group
                 </Button>
-              )}
-            </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                    <AlertTriangle className="w-5 h-5" />
+                    Are you absolutely sure?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your group
+                    and remove all members.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={loadingAction === "delete"}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground! hover:bg-destructive/90"
+                    disabled={loadingAction === "delete"}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDeleteGroup();
+                    }}
+                  >
+                    {loadingAction === "delete" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete Group"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
 
@@ -187,10 +220,33 @@ export const Project = ({ group }: { group: Group }) => {
         {/* Rejection notice */}
         {isRejected && (
           <div className="mt-4 p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-sm text-red-600">
-            <span className="font-semibold">Rejected.</span> Your supervisor request was rejected.
-            {isLeader
-              ? " You can invite members and send a new supervisor request."
-              : " Please contact your group leader for next steps."}
+            <div className="flex gap-2 mb-1">
+              <span className="font-semibold">Rejected.</span> 
+              <span>Your supervisor request was rejected.</span>
+            </div>
+            {rejectedRequest?.remarks && (
+              <div className="mb-2 pl-3 border-l-2 border-red-500/30 text-red-700/90 italic">
+                "{rejectedRequest.remarks}"
+              </div>
+            )}
+            <div className="text-red-500/80">
+              {isLeader
+                ? "You can invite members and send a new supervisor request."
+                : "Please contact your group leader for next steps."}
+            </div>
+          </div>
+        )}
+
+        {/* Approval remarks */}
+        {group.status !== "PENDING_SUPERVISOR" && group.status !== "REJECTED" && group.status !== "DRAFT" && approvedRequest?.remarks && (
+          <div className="mt-4 p-3 rounded-lg bg-green-500/5 border border-green-500/20 text-sm text-green-700">
+            <div className="flex items-center gap-2 mb-1 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              Supervisor Remarks
+            </div>
+            <div className="pl-6 italic text-green-700/90">
+              "{approvedRequest.remarks}"
+            </div>
           </div>
         )}
       </div>

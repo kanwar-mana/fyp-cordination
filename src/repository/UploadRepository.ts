@@ -10,10 +10,6 @@ export default {
     const formData = new FormData();
     formData.append("file", file);
 
-    return apiClient.post<ApiResponse<UploadResponse>>(UPLOAD_BASE, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return apiClient.post<ApiResponse<UploadResponse>>(UPLOAD_BASE, formData);
   },
 };

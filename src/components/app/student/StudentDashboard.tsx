@@ -13,6 +13,7 @@ import { User } from "@/types/auth.types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getGroup, createGroup, getMyInvitations } from "@/store/group/groupThunk";
 import { getSessions } from "@/store/session/sessionThunk";
+import { checkAuth } from "@/store/auth/authThunk";
 import CreateGroupForm from "@/components/groups/CreateGroupForm";
 import { CreateGroupPayload } from "@/types/group.types";
 import { CalendarX } from "lucide-react";
@@ -68,6 +69,7 @@ const StudentDashboard = ({ user }: { user: User }) => {
 
   const handleCreateGroup = async (payload: CreateGroupPayload) => {
     await dispatch(createGroup(payload)).unwrap();
+    dispatch(checkAuth());
   };
   useEffect(() => {
       dispatch(getMyInvitations());

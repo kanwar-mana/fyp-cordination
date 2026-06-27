@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Milestone } from "@/types/group.types";
 import { UploadCloud, FileIcon, X } from "lucide-react";
 import RepositoryFactory from "@/repository/RepositoryFactory";
+import { getFileIcon } from "@/lib/utils";
 
 interface MilestoneSubmissionFormProps {
   milestone: Milestone;
@@ -16,27 +17,23 @@ interface MilestoneSubmissionFormProps {
 }
 
 export default function MilestoneSubmissionForm({ milestone, onSubmit, isLoading = false }: MilestoneSubmissionFormProps) {
-  const [submissionUrls, setSubmissionUrls] = useState<string[]>([]);
+  const [localFiles, setLocalFiles] = useState<File[]>([]);
   const [studentMessage, setStudentMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submissionUrls.length === 0) return;
-    await onSubmit({ submissionUrls, studentMessage });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+    if (localFiles.length === 0) return;
 
     setIsUploading(true);
     try {
       const uploadRepo = RepositoryFactory.get("upload");
-      const uploadPromises = files.map(file => uploadRepo.uploadDocument(file));
+      const uploadPromises = localFiles.map(file => uploadRepo.uploadDocument(file));
       const results = await Promise.all(uploadPromises);
       const newUrls = results.map(res => res.data.data.url);
-      setSubmissionUrls(prev => [...prev, ...newUrls]);
+      
+      await onSubmit({ submissionUrls: newUrls, studentMessage });
+      setLocalFiles([]);
     } catch (err) {
       console.error("Failed to upload documents", err);
     } finally {
@@ -44,8 +41,14 @@ export default function MilestoneSubmissionForm({ milestone, onSubmit, isLoading
     }
   };
 
-  const removeFile = (urlToRemove: string) => {
-    setSubmissionUrls(prev => prev.filter(url => url !== urlToRemove));
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setLocalFiles(prev => [...prev, ...files]);
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setLocalFiles(prev => prev.filter((_, i) => i !== indexToRemove));
   };
 
   const isSubmitting = isLoading || isUploading;
@@ -66,7 +69,7 @@ export default function MilestoneSubmissionForm({ milestone, onSubmit, isLoading
               <input
                 type="file"
                 multiple
-                onChange={handleFileUpload}
+                onChange={handleFileSelect}
                 disabled={isSubmitting || milestone.status === "APPROVED"}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
               />
@@ -78,30 +81,33 @@ export default function MilestoneSubmissionForm({ milestone, onSubmit, isLoading
               </div>
             </div>
 
-            {/* Display Uploaded Files */}
-            {submissionUrls.length > 0 && (
+            {/* Display Selected Files */}
+            {localFiles.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
-                {submissionUrls.map((url, urlIndex) => (
-                  <div 
-                    key={`${url}-${urlIndex}`}
-                    className="flex items-center gap-2 pl-2 pr-1 py-1 text-xs bg-primary/10 text-primary border border-primary/20 rounded-full group"
-                  >
-                    <FileIcon className="w-3 h-3" />
-                    <span className="max-w-[120px] truncate" title={url.split('/').pop()}>
-                      {url.split('/').pop() || 'Document'}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="w-5 h-5 p-0 rounded-full hover:bg-primary/20 text-primary"
-                      onClick={() => removeFile(url)}
-                      disabled={isSubmitting}
+                {localFiles.map((file, i) => {
+                  const Icon = getFileIcon(file.name);
+                  return (
+                    <div 
+                      key={`${file.name}-${i}`}
+                      className="flex items-center gap-2 pl-2 pr-1 py-1 text-xs bg-primary/10 text-primary border border-primary/20 rounded-full group"
                     >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ))}
+                      <Icon className="w-3 h-3" />
+                      <span className="max-w-[120px] truncate" title={file.name}>
+                        {file.name}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-5 h-5 p-0 rounded-full hover:bg-primary/20 text-primary"
+                        onClick={() => removeFile(i)}
+                        disabled={isSubmitting}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -116,7 +122,7 @@ export default function MilestoneSubmissionForm({ milestone, onSubmit, isLoading
             />
           </div>
 
-          <Button type="submit" disabled={isSubmitting || milestone.status === "APPROVED" || submissionUrls.length === 0}>
+          <Button type="submit" disabled={isSubmitting || milestone.status === "APPROVED" || localFiles.length === 0}>
             {isLoading ? "Submitting..." : milestone.status === "APPROVED" ? "Already Approved" : "Submit Milestone"}
           </Button>
         </form>

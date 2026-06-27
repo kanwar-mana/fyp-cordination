@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getMyInvitations, respondToInvitation } from "@/store/group/groupThunk";
+import { checkAuth } from "@/store/auth/authThunk";
 
 interface GroupInvitationsProps {
   /** When true, renders nothing instead of empty state — for embedded use inside dashboards */
@@ -31,6 +32,7 @@ export const GroupInvitations = ({ hideWhenEmpty = false }: GroupInvitationsProp
       await dispatch(respondToInvitation({ requestId, action })).unwrap();
       if (action === "ACCEPTED") {
         setAccepted(true);
+        dispatch(checkAuth());
       }
       dispatch(getMyInvitations()); // refresh — after accept, all others become REJECTED server-side
     } finally {

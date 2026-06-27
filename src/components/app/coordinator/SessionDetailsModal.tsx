@@ -31,7 +31,7 @@ export default function SessionDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl border-border/70 p-0 sm:rounded-2xl">
+      <DialogContent className="max-w-2xl! border-border/70 p-0 sm:rounded-2xl">
         {session && (
           <>
             <div className="bg-muted/30 px-6 py-5">

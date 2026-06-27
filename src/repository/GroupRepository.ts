@@ -86,6 +86,11 @@ export default {
     return apiClient.get<ApiResponse<GroupRequest[]>>(`${GROUP_BASE}/my-supervisor-requests`);
   },
 
+  // Get supervisor requests sent by the logged-in leader (Student/Leader)
+  getMySentSupervisorRequests() {
+    return apiClient.get<ApiResponse<GroupRequest[]>>(`${GROUP_BASE}/my-sent-supervisor-requests`);
+  },
+
   // Respond to supervisor request
   respondToSupervisorRequest(payload: RespondSupervisorRequestPayload) {
     return apiClient.post<ApiResponse<Group | GroupRequest>>(`${GROUP_BASE}/respond-supervisor-request`, payload);

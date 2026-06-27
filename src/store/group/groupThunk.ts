@@ -246,3 +246,15 @@ export const cancelSupervisorRequest = createAsyncThunk(
     }
   }
 );
+
+export const getMySentSupervisorRequests = createAsyncThunk(
+  "groups/getMySentSupervisorRequests",
+  async (_, thunkAPI) => {
+    try {
+      const response = await groups.getMySentSupervisorRequests();
+      return response.data.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  }
+);

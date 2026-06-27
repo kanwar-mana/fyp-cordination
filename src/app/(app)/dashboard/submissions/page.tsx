@@ -1,10 +1,20 @@
 "use client";
+import { useEffect } from "react";
 import StudentSubmissions from "@/components/app/student/StudentSubmissions";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { getGroup } from "@/store/group/groupThunk";
 import { SubmissionsSkeleton } from "@/components/app/skeleton/SubmissionsSkeleton";
 
 export default function SubmissionsPage() {
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { currentGroup } = useAppSelector((state) => state.group);
+
+  useEffect(() => {
+    if (user?.role === "student" && user?.studentProfile?.group && !currentGroup) {
+      dispatch(getGroup(user.studentProfile.group as string));
+    }
+  }, [user, currentGroup, dispatch]);
 
   if (!user) {
     return (

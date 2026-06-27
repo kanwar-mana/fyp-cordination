@@ -13,4 +13,16 @@ export default {
   getStudents() {
     return apiClient.get<{ students: User[] }>(GET_STUDENTS);
   },
+
+  allowSupervisor(email: string) {
+    return apiClient.post(`${COORDINATOR_BASE}/allow-supervisor`, { email });
+  },
+
+  getAllowedSupervisors() {
+    return apiClient.get(`${COORDINATOR_BASE}/allowed-supervisors`);
+  },
+
+  removeAllowedSupervisor(id: string) {
+    return apiClient.delete(`${COORDINATOR_BASE}/allowed-supervisors/${id}`);
+  }
 };

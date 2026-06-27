@@ -13,6 +13,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import { ChatbotWidget } from "@/components/app/student/ChatbotWidget";
 
 const studentNavItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -55,10 +56,13 @@ export default function DashboardShell({
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
+  const isStudent = user?.role === "student";
+
   return (
     <SidebarProvider>
       <AppShell navItems={navItems}>
         <RouteGuard>{children}</RouteGuard>
+        {isStudent && <ChatbotWidget />}
       </AppShell>
     </SidebarProvider>
   );
