@@ -185,10 +185,10 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
           return (
             <Card
               key={item.title}
-              className="gap-4 border-l-4 border-l-primary shadow-lg/3 bg-card/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="gap-2 border-l-4 border-l-primary shadow-lg/3 bg-card/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
             >
-              <CardHeader className="pb-0 w-min sm:w-full">
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-0">
+                <div className="flex gap-2 items-center justify-between">
                   <div className="rounded-md bg-primary/12 p-2 text-primary">
                     <Icon className="size-4" />
                   </div>
@@ -210,7 +210,7 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
       </div>
 
       <Tabs defaultValue="sessions" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 md:w-[600px]">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 md:w-[600px] h-auto">
           <TabsTrigger value="sessions" className="font-semibold">Sessions Overview</TabsTrigger>
           <TabsTrigger value="groups" className="font-semibold">Groups Directory</TabsTrigger>
           <TabsTrigger value="supervisors" className="font-semibold">Supervisors</TabsTrigger>

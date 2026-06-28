@@ -66,7 +66,7 @@ function ProjectCard({ group }: { group: Group }) {
   return (
     <Link href={`/dashboard/projects/${group._id}`}>
       <Card className="group cursor-pointer border-border/60 bg-card/70 hover:bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-        <CardContent className="px-5 flex flex-col gap-3">
+        <CardContent className="p-4 sm:p-5 flex flex-col gap-3 h-full">
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
