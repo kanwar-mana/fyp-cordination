@@ -114,7 +114,7 @@ export default {
   },
 
   // Assign internal evaluator
-  assignInternalEvaluator(groupId: string, payload: { internalEvaluatorId: string }) {
+  assignInternalEvaluator: (groupId: string, payload: { internalEvaluatorId: string | null }) => {
     return apiClient.patch<ApiResponse<Group>>(`${GROUP_BASE}/${groupId}/assign-evaluator`, payload);
   },
 };

@@ -7,12 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, FolderGit2, Users, ChevronDown, UserCheck } from "lucide-react";
+import { Trash2, FolderGit2, Users, ChevronDown, UserCheck, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAppDispatch } from "@/store/hooks";
 import { assignInternalEvaluator } from "@/store/group/groupThunk";
@@ -29,7 +31,7 @@ export default function AllGroupsTable({ groups, supervisors = [], onDeleteGroup
   const dispatch = useAppDispatch();
   const [assigningId, setAssigningId] = useState<string | null>(null);
 
-  const handleAssignEvaluator = async (groupId: string, evaluatorId: string) => {
+  const handleAssignEvaluator = async (groupId: string, evaluatorId: string | null) => {
     setAssigningId(groupId);
     await dispatch(assignInternalEvaluator({ groupId, internalEvaluatorId: evaluatorId }));
     setAssigningId(null);
@@ -99,29 +101,12 @@ export default function AllGroupsTable({ groups, supervisors = [], onDeleteGroup
                       )}
                     </TableCell>
                     <TableCell>
-                      {group.internalEvaluator ? (
-                        <span className="text-sm font-medium">{group.internalEvaluator.fullName}</span>
-                      ) : (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-7 text-xs" disabled={assigningId === group._id || availableEvaluators.length === 0}>
-                              {assigningId === group._id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <UserCheck className="w-3 h-3 mr-1" />}
-                              Assign
-                              <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto">
-                            {availableEvaluators.map((evaluator) => (
-                              <DropdownMenuItem
-                                key={evaluator._id}
-                                onClick={() => handleAssignEvaluator(group._id, evaluator._id)}
-                              >
-                                {evaluator.fullName}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
+                      <AssignEvaluatorDropdown 
+                        group={group}
+                        availableEvaluators={availableEvaluators}
+                        assigningId={assigningId}
+                        handleAssignEvaluator={handleAssignEvaluator}
+                      />
                     </TableCell>
                     <TableCell>
                       <Badge variant={group.status === "APPROVED" ? "default" : "secondary"}>
@@ -147,5 +132,67 @@ export default function AllGroupsTable({ groups, supervisors = [], onDeleteGroup
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function AssignEvaluatorDropdown({ group, availableEvaluators, assigningId, handleAssignEvaluator }: any) {
+  const [search, setSearch] = useState("");
+
+  const filteredEvaluators = availableEvaluators.filter((e: any) =>
+    e.fullName.toLowerCase().includes(search.toLowerCase()) ||
+    e.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <DropdownMenu onOpenChange={(open) => { if (!open) setSearch("") }}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 text-xs" disabled={assigningId === group._id || availableEvaluators.length === 0}>
+          {assigningId === group._id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : group.internalEvaluator? <UserCheck className="w-3 h-3 mr-1 text-chart-3" /> : <UserCheck className="w-3 h-3 mr-1" />}
+          {group.internalEvaluator ? group.internalEvaluator.fullName : "Assign"}
+          <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[240px] flex flex-col p-0">
+        <div className="p-2 border-b">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search evaluator..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 pl-7 text-xs bg-muted/40"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+        <div className="overflow-y-auto max-h-[250px] p-1">
+          {filteredEvaluators.length === 0 ? (
+            <div className="p-3 text-center text-xs text-muted-foreground">No evaluators found.</div>
+          ) : (
+            filteredEvaluators.map((evaluator: any) => (
+              <DropdownMenuItem
+                key={evaluator._id}
+                onClick={() => handleAssignEvaluator(group._id, evaluator._id)}
+                disabled={group.internalEvaluator?._id === evaluator._id}
+              >
+                {evaluator.fullName}
+              </DropdownMenuItem>
+            ))
+          )}
+          {group.internalEvaluator && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => handleAssignEvaluator(group._id, null)}
+              >
+                Remove Evaluator
+              </DropdownMenuItem>
+            </>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

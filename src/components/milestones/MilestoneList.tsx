@@ -13,10 +13,11 @@ interface MilestoneListProps {
   group: Group;
   isLeader: boolean;
   isSupervisor?: boolean;
+  isCoordinator?: boolean;
   showStats?: boolean;
 }
 
-export const MilestoneList = ({ group, isLeader, isSupervisor = false, showStats = true }: MilestoneListProps) => {
+export const MilestoneList = ({ group, isLeader, isSupervisor = false, isCoordinator = false, showStats = true }: MilestoneListProps) => {
   const [selected, setSelected] = useState<Milestone | null>(null);
 
   const milestones: Milestone[] = group.milestones || [];
@@ -56,6 +57,7 @@ export const MilestoneList = ({ group, isLeader, isSupervisor = false, showStats
         groupId={group._id}
         isLeader={isLeader}
         isSupervisor={isSupervisor}
+        isCoordinator={isCoordinator}
         groupApproved={groupApproved}
         onBack={() => setSelected(null)}
         onSubmitSuccess={() => setSelected(null)}
@@ -67,57 +69,75 @@ export const MilestoneList = ({ group, isLeader, isSupervisor = false, showStats
     <div className="flex flex-col gap-6">
       {showStats && (
         <>
-          {/* Stats cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              {
-                label: "Total",
-                value: totalCount,
-                icon: <FileText className="w-4 h-4" />,
-                color: "text-muted-foreground",
-              },
-              {
-                label: "Approved",
-                value: approvedCount,
-                icon: <CheckCircle2 className="w-4 h-4" />,
-                color: "text-green-500",
-              },
-              {
-                label: "Submitted",
-                value: submittedCount,
-                icon: <Clock className="w-4 h-4" />,
-                color: "text-blue-500",
-              },
-              {
-                label: "Pending",
-                value: pendingCount,
-                icon: <AlertCircle className="w-4 h-4" />,
-                color: "text-amber-500",
-              },
-            ].map(({ label, value, icon, color }) => (
-              <div
-                key={label}
-                className="bg-card rounded-xl border border-border/50 shadow-sm p-4"
-              >
-                <div className={`flex items-center gap-2 mb-2 ${color}`}>
-                  {icon}
-                  <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          {/* Stats & Progress Container */}
+          <div className="grid gap-4 md:grid-cols-[1fr_300px] lg:grid-cols-[1fr_350px]">
+            
+            {/* Stats Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                {
+                  label: "Total",
+                  value: totalCount,
+                  icon: <FileText className="w-4 h-4" />,
+                  color: "text-muted-foreground",
+                  bg: "bg-muted/30 border-muted/20",
+                  iconBg: "bg-muted/50",
+                },
+                {
+                  label: "Approved",
+                  value: approvedCount,
+                  icon: <CheckCircle2 className="w-4 h-4" />,
+                  color: "text-green-500",
+                  bg: "bg-green-500/5 border-green-500/10",
+                  iconBg: "bg-green-500/10",
+                },
+                {
+                  label: "Submitted",
+                  value: submittedCount,
+                  icon: <Clock className="w-4 h-4" />,
+                  color: "text-blue-500",
+                  bg: "bg-blue-500/5 border-blue-500/10",
+                  iconBg: "bg-blue-500/10",
+                },
+                {
+                  label: "Pending",
+                  value: pendingCount,
+                  icon: <AlertCircle className="w-4 h-4" />,
+                  color: "text-amber-500",
+                  bg: "bg-amber-500/5 border-amber-500/10",
+                  iconBg: "bg-amber-500/10",
+                },
+              ].map(({ label, value, icon, color, bg, iconBg }) => (
+                <div
+                  key={label}
+                  className={`relative overflow-hidden rounded-xl border p-4 transition-all hover:shadow-md group ${bg}`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${iconBg} ${color}`}>
+                    {icon}
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-2xl font-bold tracking-tight">{value}</p>
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold">{value}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Progress */}
-          <div className="bg-card rounded-xl border border-border/50 shadow-sm p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-sm">Milestone Progress</h2>
-              <span className="text-xl font-bold text-primary">{progressPct}%</span>
+              ))}
             </div>
-            <Progress value={progressPct} className="h-2 mb-2" />
-            <p className="text-xs text-muted-foreground">
-              {approvedCount} of {totalCount} milestones approved
-            </p>
+
+            {/* Progress Card */}
+            <div className="bg-card/40 rounded-xl border border-border/50 p-5 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-semibold text-sm">Milestone Progress</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {approvedCount} of {totalCount} milestones approved
+                  </p>
+                </div>
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/20 shrink-0">
+                  <span className="text-sm font-bold text-primary">{progressPct}%</span>
+                </div>
+              </div>
+              <Progress value={progressPct} className="h-2.5 rounded-full bg-muted/50" />
+            </div>
           </div>
 
           <Separator />

@@ -282,12 +282,12 @@ export const getMySentSupervisorRequests = createAsyncThunk(
 
 export const assignInternalEvaluator = createAsyncThunk(
   "groups/assignInternalEvaluator",
-  async (payload: { groupId: string; internalEvaluatorId: string }, thunkAPI) => {
+  async (payload: { groupId: string; internalEvaluatorId: string | null }, thunkAPI) => {
     try {
       const response = await groups.assignInternalEvaluator(payload.groupId, { internalEvaluatorId: payload.internalEvaluatorId });
       toast({
         title: "Success",
-        description: "Internal evaluator assigned successfully.",
+        description: payload.internalEvaluatorId ? "Internal evaluator assigned successfully." : "Internal evaluator removed.",
       });
       return response.data.data;
     } catch (error: any) {

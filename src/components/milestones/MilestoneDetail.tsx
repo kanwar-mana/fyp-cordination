@@ -26,6 +26,7 @@ interface MilestoneDetailProps {
   groupId: string;
   isLeader: boolean;
   isSupervisor?: boolean;
+  isCoordinator?: boolean;
   groupApproved: boolean;
   onBack: () => void;
   onSubmitSuccess?: () => void;
@@ -36,6 +37,7 @@ export const MilestoneDetail = ({
   groupId,
   isLeader,
   isSupervisor = false,
+  isCoordinator = false,
   groupApproved,
   onBack,
   onSubmitSuccess,
@@ -202,7 +204,7 @@ export const MilestoneDetail = ({
               </div>
             )}
 
-            {!isSupervisor && milestone.remarks && (
+            {!isSupervisor && !isCoordinator && milestone.remarks && (
               <div className="mb-6 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
                 <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
                   <AlertCircle className="w-3.5 h-3.5" />
@@ -212,46 +214,58 @@ export const MilestoneDetail = ({
               </div>
             )}
 
-            {isSupervisor ? (
-              <div className="pt-2 border-t border-border/50">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4 mt-4">
-                  Supervisor Action
+            {isCoordinator && milestone.remarks && (
+              <div className="mb-6 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Supervisor Feedback
                 </p>
-                <MilestoneGradingForm
-                  milestone={milestone}
-                  isLoading={isLoading}
-                  onSubmit={async (payload) => {
-                    await dispatch(
-                      gradeMilestone({ groupId, milestoneId: milestone._id, payload })
-                    ).unwrap();
-                    onSubmitSuccess?.();
-                  }}
-                />
+                <p className="text-sm text-amber-700/90 italic">"{milestone.remarks}"</p>
               </div>
-            ) : type !== "completed" ? (
-              !groupApproved ? (
-                <div className="flex items-center gap-3 p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-destructive">
-                  <ShieldX className="w-4 h-4 shrink-0" />
-                  <span>Submissions are locked until your group is approved by a supervisor.</span>
+            )}
+
+            {!isCoordinator && (
+              isSupervisor ? (
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4 mt-4">
+                    Supervisor Action
+                  </p>
+                  <MilestoneGradingForm
+                    milestone={milestone}
+                    isLoading={isLoading}
+                    onSubmit={async (payload) => {
+                      await dispatch(
+                        gradeMilestone({ groupId, milestoneId: milestone._id, payload })
+                      ).unwrap();
+                      onSubmitSuccess?.();
+                    }}
+                  />
                 </div>
-              ) : isLeader ? (
-                <MilestoneSubmissionForm
-                  milestone={milestone}
-                  isLoading={isLoading}
-                  onSubmit={async (payload) => {
-                    await dispatch(
-                      submitMilestone({ groupId, milestoneId: milestone._id, payload })
-                    ).unwrap();
-                    onSubmitSuccess?.();
-                  }}
-                />
-              ) : (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
-                  <Upload className="w-4 h-4" />
-                  <span>Only the group leader can submit this milestone.</span>
-                </div>
-              )
-            ) : null}
+              ) : type !== "completed" ? (
+                !groupApproved ? (
+                  <div className="flex items-center gap-3 p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-destructive">
+                    <ShieldX className="w-4 h-4 shrink-0" />
+                    <span>Submissions are locked until your group is approved by a supervisor.</span>
+                  </div>
+                ) : isLeader ? (
+                  <MilestoneSubmissionForm
+                    milestone={milestone}
+                    isLoading={isLoading}
+                    onSubmit={async (payload) => {
+                      await dispatch(
+                        submitMilestone({ groupId, milestoneId: milestone._id, payload })
+                      ).unwrap();
+                      onSubmitSuccess?.();
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
+                    <Upload className="w-4 h-4" />
+                    <span>Only the group leader can submit this milestone.</span>
+                  </div>
+                )
+              ) : null
+            )}
           </section>
         </div>
 

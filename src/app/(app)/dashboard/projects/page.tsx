@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { Project } from "@/components/app/student/StudentProject";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { getGroup } from "@/store/group/groupThunk";
-
 import SupervisorProjects from "@/components/app/supervisor/SupervisorProjects";
+import CoordinatorProjects from "@/components/app/coordinator/CoordinatorProjects";
 import { Loader2, FolderKanban } from "lucide-react";
 
 export default function DashboardPage() {
@@ -13,11 +13,14 @@ export default function DashboardPage() {
   const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    // If the student has a group assigned in their profile, but it's not loaded in state, fetch it
     if (user?.role === "student" && user?.studentProfile?.group && !currentGroup) {
       dispatch(getGroup(user.studentProfile.group as string));
     }
   }, [user, currentGroup, dispatch]);
+
+  if (user?.role === "coordinator") {
+    return <CoordinatorProjects />;
+  }
 
   if (user?.role === "supervisor") {
     return <SupervisorProjects />;
