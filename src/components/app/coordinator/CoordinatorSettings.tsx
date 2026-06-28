@@ -11,7 +11,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { updatePassword } from "@/store/auth/authThunk";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function StudentSettings() {
+export default function CoordinatorSettings() {
   const { user } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
@@ -75,7 +75,7 @@ export default function StudentSettings() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your student profile and account security.
+          Manage your coordinator profile and account security.
         </p>
       </div>
 
@@ -99,12 +99,12 @@ export default function StudentSettings() {
             <div className="p-6 md:p-8 flex items-center gap-6 border-b border-border/40 bg-muted/20">
               <Avatar className="h-24 w-24 border-4 border-background shadow-md">
                 <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                  {user?.fullName?.charAt(0) || "S"}
+                  {user?.fullName?.charAt(0) || "C"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h2 className="text-xl font-bold">{user?.fullName}</h2>
-                <p className="text-muted-foreground font-medium">Student</p>
+                <p className="text-muted-foreground font-medium">Coordinator</p>
               </div>
             </div>
 
@@ -124,15 +124,7 @@ export default function StudentSettings() {
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Role</p>
-                  <Input value={user?.role || "Student"} disabled className="bg-muted/30 capitalize" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Roll Number</p>
-                  <Input value={user?.studentProfile?.studentId || "N/A"} disabled className="bg-muted/30" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Batch</p>
-                  <Input value={user?.studentProfile?.batch || "N/A"} disabled className="bg-muted/30" />
+                  <Input value={user?.role || "Coordinator"} disabled className="bg-muted/30 capitalize" />
                 </div>
               </div>
             </div>
@@ -159,10 +151,13 @@ export default function StudentSettings() {
                     type={showCurrentPassword ? "text" : "password"}
                     value={passwordForm.currentPassword}
                     onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                      setPasswordForm({
+                        ...passwordForm,
+                        currentPassword: e.target.value,
+                      })
                     }
-                    placeholder="Enter current password"
                     className="pr-10"
+                    placeholder="Enter current password"
                     required
                   />
                   <button
@@ -170,7 +165,11 @@ export default function StudentSettings() {
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showCurrentPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -182,41 +181,58 @@ export default function StudentSettings() {
                     type={showNewPassword ? "text" : "password"}
                     value={passwordForm.newPassword}
                     onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                      setPasswordForm({
+                        ...passwordForm,
+                        newPassword: e.target.value,
+                      })
                     }
-                    placeholder="Enter new password"
                     className="pr-10"
+                    placeholder="Create a new password"
                     required
+                    minLength={8}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showNewPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2 relative">
-                <p className="text-sm font-medium">Confirm Password</p>
+                <p className="text-sm font-medium">Confirm New Password</p>
                 <div className="relative">
                   <Input
                     type={showConfirmPassword ? "text" : "password"}
                     value={passwordForm.confirmPassword}
                     onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                      setPasswordForm({
+                        ...passwordForm,
+                        confirmPassword: e.target.value,
+                      })
                     }
-                    placeholder="Confirm new password"
                     className="pr-10"
+                    placeholder="Confirm your new password"
                     required
                   />
                   <button
                     type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>

@@ -254,10 +254,6 @@ const SupervisorDashboard = ({ user }: { user: User }) => {
     <div className="space-y-8 pb-8 animate-in fade-in duration-300">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <p className="text-sm font-medium text-primary">Supervisor Portal</p>
-        </div>
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome back, {user.fullName.split(" ")[0]}
         </h1>

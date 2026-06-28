@@ -28,7 +28,7 @@ export const getStudents = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await users.getStudents();
-      return response.data.students;
+      return response.data.data;
     } catch (error: any) {
       toast({
         title: "Error",

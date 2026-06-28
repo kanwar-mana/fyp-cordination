@@ -425,7 +425,7 @@ export const Project = ({ group }: { group: Group }) => {
         {!(group.session?.fypMilestones?.length) ? (
           <p className="text-sm text-muted-foreground">No milestones set by the coordinator yet.</p>
         ) : (
-          <div className="relative pl-4 border-l-2 border-border/50 space-y-5">
+          <div className="relative space-y-5">
             {(group.session?.fypMilestones || []).map((sm, idx) => {
               const mp = group.milestones?.find(
                 (p) => p.title === sm.title || p._id === sm._id
@@ -435,7 +435,7 @@ export const Project = ({ group }: { group: Group }) => {
               const isPastDue = !isApproved && !isSubmitted && new Date(sm.dueDate) < new Date();
 
               return (
-                <div key={sm._id || idx} className="relative flex items-start gap-4 -ml-[13px]">
+                <div key={sm._id || idx} className="relative flex items-start gap-4">
                   <div
                     className={`mt-0.5 w-5 h-5 rounded-full shrink-0 flex items-center justify-center border-2 border-background ${
                       isApproved
