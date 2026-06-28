@@ -106,14 +106,17 @@ export function AppShell({
         <SidebarFooter>{user ? <NavUser user={user} /> : null}</SidebarFooter>
       </Sidebar>
 
-      <SidebarInset>
+      <SidebarInset className="flex flex-col min-h-screen">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-sidebar px-4">
           <SidebarTrigger />
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
           </div>
         </header>
-        <div className="flex-1 px-4 py-6 lg:px-6">{children}</div>
+        <main className="flex-1 px-4 py-6 lg:px-6">{children}</main>
+        <footer className="py-4 text-center text-sm text-muted-foreground border-t mt-auto">
+          © {new Date().getFullYear()} AcadPath Coordination System. All rights reserved.
+        </footer>
       </SidebarInset>
     </div>
   );

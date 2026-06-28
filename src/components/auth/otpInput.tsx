@@ -30,7 +30,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useAppDispatch } from "@/store/hooks";
-import { verifyEmail } from "@/store/auth/authThunk";
+import { verifyEmail, resendVerificationEmail } from "@/store/auth/authThunk";
 
 export const title = "Email Verification Flow";
 
@@ -52,6 +52,7 @@ export default function OtpInput({
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,6 +72,12 @@ export default function OtpInput({
       })
       .finally(() => setIsVerifying(false));
   }
+
+  const handleResend = async () => {
+    setIsResending(true);
+    await dispatch(resendVerificationEmail({ email }))
+      .finally(() => setIsResending(false));
+  };
 
   return (
     <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
@@ -137,8 +144,10 @@ export default function OtpInput({
             className="h-auto p-0 font-normal"
             type="button"
             variant="link"
+            onClick={handleResend}
+            disabled={isResending}
           >
-            Resend code
+            {isResending ? "Sending..." : "Resend code"}
           </Button>
         </div>
       </CardFooter>

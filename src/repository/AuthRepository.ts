@@ -27,8 +27,11 @@ export default {
   signup(payload: SignupRequest) {
     return apiClient.post<AuthResponse>(SIGNUP, payload);
   },
-  verifyEmail(payload: { token: string }) {
+  verifyEmail(payload: { email?: string; verificationCode?: string; token?: string }) {
     return apiClient.post<ApiResponse>(`${AUTH_BASE}/verify-email`, payload);
+  },
+  resendVerification(payload: { email: string }) {
+    return apiClient.post<ApiResponse>(`${AUTH_BASE}/resend-verification`, payload);
   },
 
   me() {

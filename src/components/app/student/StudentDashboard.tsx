@@ -234,7 +234,7 @@ const StudentDashboard = ({ user }: { user: User }) => {
             No milestones set by your coordinator yet.
           </p>
         ) : (
-          <div className="relative pl-4 border-l-2 border-border/50 space-y-5">
+          <div className="relative space-y-5">
             {(group.session?.fypMilestones || []).map((sm, idx) => {
               const mp = milestones.find(
                 (p) => p.title === sm.title || p._id === sm._id
@@ -245,10 +245,10 @@ const StudentDashboard = ({ user }: { user: User }) => {
                 !isApproved && !isSubmitted && new Date(sm.dueDate) < new Date();
 
               return (
-                <div
-                  key={sm._id || idx}
-                  className="relative flex items-start gap-4 -ml-[13px]"
-                >
+                  <div
+                    key={sm._id || idx}
+                    className="relative flex items-start gap-4"
+                  >
                   {/* Timeline dot */}
                   <div
                     className={`mt-0.5 w-5 h-5 rounded-full shrink-0 flex items-center justify-center border-2 border-background ${

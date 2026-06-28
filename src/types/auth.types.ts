@@ -17,8 +17,11 @@ export interface User {
   email: string;
   fullName: string;
   role: UserRole;
+  department:string;
   studentProfile?: {
     group?: string;
+    studentId?: string;
+    batch?: string;
   };
   supervisorProfile?: {
     groups?: string[];

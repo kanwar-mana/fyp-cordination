@@ -36,7 +36,7 @@ export const signup = createAsyncThunk(
 
 export const verifyEmail = createAsyncThunk(
   "auth/verifyEmail",
-  async (payload, thunkAPI) => {
+  async (payload: any, thunkAPI) => {
     try {
       const response = await auth.verifyEmail(payload);
       toast({
@@ -53,6 +53,32 @@ export const verifyEmail = createAsyncThunk(
         description:
           error?.response?.data?.message ||
           "Email verification failed. Please try again.",
+        variant: "destructive",
+      });
+      return thunkAPI.rejectWithValue(error?.response?.data);
+    }
+  },
+);
+
+export const resendVerificationEmail = createAsyncThunk(
+  "auth/resendVerification",
+  async (payload: { email: string }, thunkAPI) => {
+    try {
+      const response = await auth.resendVerification(payload);
+      toast({
+        title: "Code Sent!",
+        description:
+          response.data.message ||
+          "A new verification code has been sent to your email.",
+      });
+      return response.data;
+    } catch (error: any) {
+      console.log("Resend verification error:", error);
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.message ||
+          "Failed to resend verification code. Please try again.",
         variant: "destructive",
       });
       return thunkAPI.rejectWithValue(error?.response?.data);

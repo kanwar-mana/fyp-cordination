@@ -1,5 +1,7 @@
 "use client";
 import StudentSettings from "@/components/app/student/StudentSettings";
+import CoordinatorSettings from "@/components/app/coordinator/CoordinatorSettings";
+import SupervisorSettings from "@/components/app/supervisor/SupervisorSettings";
 import { useAppSelector } from "@/store/hooks";
 import { SettingsSkeleton } from "@/components/app/skeleton/SettingsSkeleton";
 
@@ -19,9 +21,9 @@ export default function SettingsPage() {
       {user.role === "student" ? (
         <StudentSettings />
       ) : user.role === "supervisor" ? (
-        <div>Supervisor Settings - Coming Soon</div>
+        <SupervisorSettings />
       ) : user.role === "coordinator" ? (
-        <div>Coordinator Settings - Coming Soon</div>
+        <CoordinatorSettings />
       ) : (
         <SettingsSkeleton />
       )}
