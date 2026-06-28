@@ -11,7 +11,8 @@ import {
   FileIcon,
   X,
 } from "lucide-react";
-import { getFileIcon, getFileName } from "@/lib/utils";
+import { getFileIcon, downloadCloudinaryFile } from "@/lib/utils";
+import type { CloudinaryFile } from "@/types/group.types";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,7 +35,7 @@ export type SessionFormMilestone = {
   title: string;
   dueDate: string;
   description: string;
-  documentUrls: string[];
+  documentFiles: CloudinaryFile[];
   localFiles?: File[];
 };
 
@@ -75,7 +76,7 @@ export const DEFAULT_SESSION_FORM_VALUES: SessionFormValues = {
       title: "",
       dueDate: "",
       description: "",
-      documentUrls: [],
+      documentFiles: [],
       localFiles: [],
     },
   ],
@@ -100,10 +101,10 @@ export function mapSessionToFormValues(session: Session): SessionFormValues {
             title: milestone.title || "",
             dueDate: toDateInputValue(milestone.dueDate),
             description: milestone.description || "",
-            documentUrls: milestone.documentUrls || [],
+            documentFiles: milestone.documentFiles || [],
             localFiles: [],
           }))
-        : [{ title: "", dueDate: "", description: "", documentUrls: [], localFiles: [] }],
+        : [{ title: "", dueDate: "", description: "", documentFiles: [], localFiles: [] }],
   };
 }
 
@@ -185,7 +186,7 @@ function SessionForm({
       ...previous,
       fypMilestones: [
         ...previous.fypMilestones,
-        { title: "", dueDate: "", description: "", documentUrls: [], localFiles: [] },
+        { title: "", dueDate: "", description: "", documentFiles: [], localFiles: [] },
       ],
     }));
   };
@@ -209,17 +210,21 @@ function SessionForm({
       
       const finalMilestones = await Promise.all(
         form.fypMilestones.map(async (milestone) => {
-          let newUrls: string[] = [];
+          let newFiles: CloudinaryFile[] = [];
           if (milestone.localFiles && milestone.localFiles.length > 0) {
             const uploadPromises = milestone.localFiles.map(file => uploadRepo.uploadDocument(file));
             const results = await Promise.all(uploadPromises);
-            newUrls = results.map(res => res.data.data.url);
+            newFiles = results.map(res => ({
+              cloudinaryUrl: res.data.data.url,
+              publicId: res.data.data.publicId,
+              originalName: res.data.data.originalName,
+            }));
           }
           return {
             title: milestone.title.trim(),
             dueDate: milestone.dueDate,
             description: milestone.description.trim(),
-            documentUrls: [...(milestone.documentUrls || []), ...newUrls],
+            documentFiles: [...(milestone.documentFiles || []), ...newFiles],
           };
         })
       );
@@ -270,12 +275,12 @@ function SessionForm({
     }));
   };
 
-  const removeFile = (milestoneIndex: number, urlToRemove: string) => {
+  const removeFile = (milestoneIndex: number, publicIdToRemove: string) => {
     setForm((previous) => ({
       ...previous,
       fypMilestones: previous.fypMilestones.map((milestone, idx) =>
-        idx === milestoneIndex 
-          ? { ...milestone, documentUrls: milestone.documentUrls.filter(url => url !== urlToRemove) } 
+        idx === milestoneIndex
+          ? { ...milestone, documentFiles: milestone.documentFiles.filter(f => f.publicId !== publicIdToRemove) }
           : milestone
       ),
     }));
@@ -558,25 +563,30 @@ function SessionForm({
                       )}
 
                       {/* Display Already Uploaded Files as Modern Chips */}
-                      {milestone.documentUrls && milestone.documentUrls.length > 0 && (
+                      {milestone.documentFiles && milestone.documentFiles.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3">
-                          {milestone.documentUrls.map((url, urlIndex) => {
-                            const Icon = getFileIcon(url);
+                          {milestone.documentFiles.map((file, fileIndex) => {
+                            const Icon = getFileIcon(file.originalName);
                             return (
                               <div 
-                                key={`${url}-${urlIndex}`}
+                                key={`${file.publicId}-${fileIndex}`}
                                 className="flex items-center gap-2 pl-2 pr-1 py-1 text-xs bg-primary/10 text-primary border border-primary/20 rounded-full group"
                               >
                                 <Icon className="w-3 h-3" />
-                                <span className="max-w-[120px] truncate" title={url}>
-                                  {getFileName(url, 'Document')}
-                                </span>
+                                <button
+                                  type="button"
+                                  className="max-w-[120px] truncate text-left hover:underline"
+                                  title={file.originalName}
+                                  onClick={() => downloadCloudinaryFile(file.cloudinaryUrl, file.originalName)}
+                                >
+                                  {file.originalName}
+                                </button>
                                 <Button
                                   type="button"
                                   variant="ghost"
                                   size="sm"
                                   className="w-5 h-5 p-0 rounded-full hover:bg-primary/20 text-primary"
-                                  onClick={() => removeFile(index, url)}
+                                  onClick={() => removeFile(index, file.publicId)}
                                   disabled={isCurrentlySubmitting}
                                 >
                                   <X className="w-3 h-3" />

@@ -1,3 +1,5 @@
+import { CloudinaryFile } from "./group.types";
+
 export interface SessionMilestone {
   _id?: string;
   id?: string;
@@ -5,7 +7,7 @@ export interface SessionMilestone {
   dueDate: string;
   description: string;
   status?: string;
-  documentUrls?: string[];
+  documentFiles?: CloudinaryFile[];
 }
 
 export interface SessionSettings {

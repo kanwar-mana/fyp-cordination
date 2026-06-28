@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Milestone } from "@/types/group.types";
+import { Milestone, CloudinaryFile } from "@/types/group.types";
 import { UploadCloud, FileIcon, X } from "lucide-react";
 import RepositoryFactory from "@/repository/RepositoryFactory";
 import { getFileIcon } from "@/lib/utils";
 
 interface MilestoneSubmissionFormProps {
   milestone: Milestone;
-  onSubmit: (payload: { submissionUrls: string[], studentMessage: string }) => Promise<void>;
+  onSubmit: (payload: { submissionFiles: CloudinaryFile[], studentMessage: string }) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -30,9 +30,13 @@ export default function MilestoneSubmissionForm({ milestone, onSubmit, isLoading
       const uploadRepo = RepositoryFactory.get("upload");
       const uploadPromises = localFiles.map(file => uploadRepo.uploadDocument(file));
       const results = await Promise.all(uploadPromises);
-      const newUrls = results.map(res => res.data.data.url);
+      const newFiles: CloudinaryFile[] = results.map(res => ({
+        cloudinaryUrl: res.data.data.url,
+        publicId: res.data.data.publicId,
+        originalName: res.data.data.originalName,
+      }));
       
-      await onSubmit({ submissionUrls: newUrls, studentMessage });
+      await onSubmit({ submissionFiles: newFiles, studentMessage });
       setLocalFiles([]);
     } catch (err) {
       console.error("Failed to upload documents", err);

@@ -58,7 +58,7 @@ export default function AllowedSupervisorsList() {
       </CardHeader>
       
       <CardContent className="space-y-6">
-        <form onSubmit={handleAdd} className="flex items-center gap-3 w-full max-w-md">
+        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row sm:items-center gap-3 w-full max-w-md">
           <div className="relative flex-1">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input

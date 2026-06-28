@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Milestone, GradeMilestonePayload } from "@/types/group.types";
 import { FileIcon } from "lucide-react";
+import { downloadCloudinaryFile } from "@/lib/utils";
 
 interface GradeMilestoneFormProps {
   milestone: Milestone;
@@ -39,23 +40,22 @@ export default function GradeMilestoneForm({ milestone, onGrade, isLoading = fal
           </div>
         )}
 
-        {milestone.submissionUrls && milestone.submissionUrls.length > 0 && (
+        {milestone.submissionFiles && milestone.submissionFiles.length > 0 && (
           <div className="mb-4">
             <span className="font-medium text-sm mb-2 block">Submitted Documents:</span>
             <div className="flex flex-wrap gap-2">
-              {milestone.submissionUrls.map((url, index) => (
-                <a 
+              {milestone.submissionFiles.map((file, index) => (
+                <button 
                   key={index} 
-                  href={url} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:underline border border-primary/20 rounded-full transition-colors group"
+                  type="button"
+                  onClick={() => downloadCloudinaryFile(file.cloudinaryUrl, file.originalName)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:underline border border-primary/20 rounded-full transition-colors group cursor-pointer"
                 >
                   <FileIcon className="w-3.5 h-3.5" />
-                  <span className="max-w-[200px] truncate" title={url.split('/').pop()}>
-                    {url.split('/').pop() || 'Document'}
+                  <span className="max-w-[200px] truncate" title={file.originalName}>
+                    {file.originalName}
                   </span>
-                </a>
+                </button>
               ))}
             </div>
           </div>
