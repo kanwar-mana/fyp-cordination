@@ -105,13 +105,8 @@ export default function CreateGroupForm({ sessions, onSubmit, isLoading = false 
                   <SelectValue placeholder="Select Domain" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="AI">AI</SelectItem>
+                  <SelectItem value="Research">Research</SelectItem>
                   <SelectItem value="Web">Web</SelectItem>
-                  <SelectItem value="IoT">IoT</SelectItem>
-                  <SelectItem value="Blockchain">Blockchain</SelectItem>
-                  <SelectItem value="Cloud">Cloud</SelectItem>
-                  <SelectItem value="Cybersecurity">Cybersecurity</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldX } from "lucide-react";
+import { ShieldX, FolderKanban } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { Spinner } from "@/components/ui/spinner";
 import { MilestoneList } from "@/components/milestones/MilestoneList";
@@ -10,6 +10,18 @@ const StudentSubmissions = () => {
   const { user } = useAppSelector((s) => s.auth);
 
   if (!currentGroup) {
+    if (!user?.studentProfile?.group) {
+      return (
+        <div className="flex flex-col items-center justify-center h-[60vh] text-muted-foreground gap-1">
+          <FolderKanban className="w-16 h-16 mb-4 text-muted/40" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">No Project Found</h2>
+          <p className="text-sm">You haven't created or joined any project yet.</p>
+          <p className="text-xs mt-2 text-muted-foreground/80">
+            Go to your Dashboard to create a group or check your invitations.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] text-muted-foreground gap-3">
         <Spinner className="size-8 text-primary" />

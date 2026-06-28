@@ -402,6 +402,7 @@ const CoordinatorDashboard = ({ user }: { user?: User | null }) => {
       <TabsContent value="groups" className="mt-4">
         <AllGroupsTable 
           groups={groups} 
+          supervisors={supervisors}
           onDeleteGroup={async (groupId) => {
             await dispatch(deleteGroup(groupId));
           }} 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useAppDispatch } from "@/store/hooks";
 import { signup } from "@/store/auth/authThunk";
@@ -95,11 +96,14 @@ export default function SignupForm({
   return (
     <div className="flex items-center justify-center w-full">
       <Card className="w-full bg-transparent border-none shadow-none max-w-md mx-auto">
-        <CardHeader className="mb-6">
-          <CardTitle className="text-3xl sm:text-4xl font-bold">
+        <CardHeader className="mb-6 flex flex-col gap-2">
+          <div className="w-16 h-16 rounded-xl bg-primary/10 overflow-hidden relative">
+            <Image src="/logo.png" alt="AcadPath Logo" fill className="object-contain p-2" />
+          </div>
+          <CardTitle className="text-3xl sm:text-4xl font-bold text-center mt-2">
             Create Account
           </CardTitle>
-          <CardDescription className="font-medium text-muted-foreground">
+          <CardDescription className="font-medium text-muted-foreground text-center">
             Join the FYP Coordination System
           </CardDescription>
         </CardHeader>

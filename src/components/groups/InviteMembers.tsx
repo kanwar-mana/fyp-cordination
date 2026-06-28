@@ -24,8 +24,11 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    dispatch(getAvailableStudents());
-  }, [dispatch]);
+    const handler = setTimeout(() => {
+      dispatch(getAvailableStudents(query));
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [dispatch, query]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -39,10 +42,7 @@ export const InviteMembers = ({ groupId, currentCount, requiredCount }: InviteMe
 
   const spots = requiredCount - currentCount;
 
-  const filtered = availableStudents.filter((s: User) =>
-    s.fullName?.toLowerCase().includes(query.toLowerCase()) ||
-    s.email?.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = availableStudents || [];
 
   const handleInvite = async (studentId: string) => {
     setInviting(studentId);

@@ -10,7 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FYP UET Taxila",
+  title: "AcadPath",
+  icons: {
+    icon: "/logo.png",
+  },
   description: "Final Year Project Management System for UET Taxila",
 };
 

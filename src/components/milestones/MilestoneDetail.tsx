@@ -9,8 +9,9 @@ import {
   Star,
   Upload,
   ShieldX,
+  Download,
 } from "lucide-react";
-import { getFileIcon, getFileName } from "@/lib/utils";
+import { getFileIcon, getFileName, isImageFile, getDownloadUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Milestone } from "@/types/group.types";
@@ -25,6 +26,7 @@ interface MilestoneDetailProps {
   groupId: string;
   isLeader: boolean;
   isSupervisor?: boolean;
+  isCoordinator?: boolean;
   groupApproved: boolean;
   onBack: () => void;
   onSubmitSuccess?: () => void;
@@ -35,6 +37,7 @@ export const MilestoneDetail = ({
   groupId,
   isLeader,
   isSupervisor = false,
+  isCoordinator = false,
   groupApproved,
   onBack,
   onSubmitSuccess,
@@ -111,19 +114,35 @@ export const MilestoneDetail = ({
               <div className="space-y-2">
                 {milestone.documentUrls.map((url, i) => {
                   const Icon = getFileIcon(url);
+                  const isImage = isImageFile(url);
+                  const href = isImage ? url : getDownloadUrl(url);
+
                   return (
-                    <a
+                    <div
                       key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/60 transition-colors text-sm text-primary hover:underline"
+                      className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/60 transition-colors"
                     >
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate max-w-[300px]">
-                        {getFileName(url, `Document ${i + 1}`)}
-                      </span>
-                    </a>
+                      <a
+                        href={href}
+                        target={isImage ? "_blank" : undefined}
+                        download={!isImage}
+                        rel="noreferrer"
+                        className="flex items-center gap-2 text-sm text-primary hover:underline flex-1 min-w-0"
+                      >
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span className="truncate max-w-[300px]">
+                          {getFileName(url, `Document ${i + 1}`)}
+                        </span>
+                      </a>
+                      <a
+                        href={getDownloadUrl(url)}
+                        download
+                        title="Download file"
+                        className="p-1.5 hover:bg-muted-foreground/10 rounded-md text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
+                    </div>
                   );
                 })}
               </div>
@@ -142,19 +161,35 @@ export const MilestoneDetail = ({
                   <div className="space-y-2">
                     {milestone.submissionUrls.map((url, i) => {
                       const Icon = getFileIcon(url);
+                      const isImage = isImageFile(url);
+                      const href = isImage ? url : getDownloadUrl(url);
+
                       return (
-                        <a
+                        <div
                           key={i}
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-green-500/30 bg-green-500/5 text-sm text-green-600 hover:underline"
+                          className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg border border-green-500/30 bg-green-500/5 transition-colors"
                         >
-                          <Icon className="w-4 h-4 shrink-0" />
-                          <span className="truncate">
-                            {getFileName(url, `Submission ${i + 1}`)}
-                          </span>
-                        </a>
+                          <a
+                            href={href}
+                            target={isImage ? "_blank" : undefined}
+                            download={!isImage}
+                            rel="noreferrer"
+                            className="flex items-center gap-2 text-sm text-green-600 hover:underline flex-1 min-w-0"
+                          >
+                            <Icon className="w-4 h-4 shrink-0" />
+                            <span className="truncate">
+                              {getFileName(url, `Submission ${i + 1}`)}
+                            </span>
+                          </a>
+                          <a
+                            href={getDownloadUrl(url)}
+                            download
+                            title="Download file"
+                            className="p-1.5 hover:bg-green-500/20 rounded-md text-green-600/80 hover:text-green-700 transition-colors shrink-0"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </div>
                       );
                     })}
                   </div>
@@ -169,7 +204,7 @@ export const MilestoneDetail = ({
               </div>
             )}
 
-            {!isSupervisor && milestone.remarks && (
+            {!isSupervisor && !isCoordinator && milestone.remarks && (
               <div className="mb-6 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
                 <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
                   <AlertCircle className="w-3.5 h-3.5" />
@@ -179,46 +214,58 @@ export const MilestoneDetail = ({
               </div>
             )}
 
-            {isSupervisor ? (
-              <div className="pt-2 border-t border-border/50">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4 mt-4">
-                  Supervisor Action
+            {isCoordinator && milestone.remarks && (
+              <div className="mb-6 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Supervisor Feedback
                 </p>
-                <MilestoneGradingForm
-                  milestone={milestone}
-                  isLoading={isLoading}
-                  onSubmit={async (payload) => {
-                    await dispatch(
-                      gradeMilestone({ groupId, milestoneId: milestone._id, payload })
-                    ).unwrap();
-                    onSubmitSuccess?.();
-                  }}
-                />
+                <p className="text-sm text-amber-700/90 italic">"{milestone.remarks}"</p>
               </div>
-            ) : type !== "completed" ? (
-              !groupApproved ? (
-                <div className="flex items-center gap-3 p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-destructive">
-                  <ShieldX className="w-4 h-4 shrink-0" />
-                  <span>Submissions are locked until your group is approved by a supervisor.</span>
+            )}
+
+            {!isCoordinator && (
+              isSupervisor ? (
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4 mt-4">
+                    Supervisor Action
+                  </p>
+                  <MilestoneGradingForm
+                    milestone={milestone}
+                    isLoading={isLoading}
+                    onSubmit={async (payload) => {
+                      await dispatch(
+                        gradeMilestone({ groupId, milestoneId: milestone._id, payload })
+                      ).unwrap();
+                      onSubmitSuccess?.();
+                    }}
+                  />
                 </div>
-              ) : isLeader ? (
-                <MilestoneSubmissionForm
-                  milestone={milestone}
-                  isLoading={isLoading}
-                  onSubmit={async (payload) => {
-                    await dispatch(
-                      submitMilestone({ groupId, milestoneId: milestone._id, payload })
-                    ).unwrap();
-                    onSubmitSuccess?.();
-                  }}
-                />
-              ) : (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
-                  <Upload className="w-4 h-4" />
-                  <span>Only the group leader can submit this milestone.</span>
-                </div>
-              )
-            ) : null}
+              ) : type !== "completed" ? (
+                !groupApproved ? (
+                  <div className="flex items-center gap-3 p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-destructive">
+                    <ShieldX className="w-4 h-4 shrink-0" />
+                    <span>Submissions are locked until your group is approved by a supervisor.</span>
+                  </div>
+                ) : isLeader ? (
+                  <MilestoneSubmissionForm
+                    milestone={milestone}
+                    isLoading={isLoading}
+                    onSubmit={async (payload) => {
+                      await dispatch(
+                        submitMilestone({ groupId, milestoneId: milestone._id, payload })
+                      ).unwrap();
+                      onSubmitSuccess?.();
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
+                    <Upload className="w-4 h-4" />
+                    <span>Only the group leader can submit this milestone.</span>
+                  </div>
+                )
+              ) : null
+            )}
           </section>
         </div>
 

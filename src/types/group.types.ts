@@ -2,13 +2,8 @@ import { User } from "./auth.types";
 import { Session } from "./session.types";
 
 export type ProjectDomain =
-  | "AI"
-  | "Web"
-  | "IoT"
-  | "Blockchain"
-  | "Cloud"
-  | "Cybersecurity"
-  | "Other";
+  | "Research"
+  | "Web";
 
 export type GroupStatus =
   | "DRAFT"
@@ -48,6 +43,7 @@ export interface Group {
   members: User[];
   requiredMembers: number;
   supervisor?: User | null;
+  internalEvaluator?: User | null;
   projectDetails: ProjectDetails;
   status: GroupStatus;
   milestones: Milestone[];
@@ -77,6 +73,15 @@ export interface CreateGroupPayload {
   sessionId: string;
   requiredMembers: number;
   projectDetails: ProjectDetails;
+}
+
+export interface UpdateGroupPayload {
+  groupId: string;
+  requiredMembers?: number;
+  title?: string;
+  description?: string;
+  domain?: ProjectDomain;
+  technologies?: string[];
 }
 
 export interface RemoveMemberPayload {

@@ -16,9 +16,10 @@ import {
   CheckCircle2,
   Search,
   Clock,
+  ClipboardCheck,
 } from "lucide-react";
 
-export default function SupervisorProjects() {
+export default function SupervisorEvaluations() {
   const dispatch = useAppDispatch();
   const { allGroups, isLoading } = useAppSelector((state) => state.group);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
@@ -42,7 +43,7 @@ export default function SupervisorProjects() {
               onClick={() => setSelectedGroup(null)}
               className="gap-2 -ml-2 text-muted-foreground hover:text-foreground"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Projects
+              <ArrowLeft className="w-4 h-4" /> Back to Evaluations
             </Button>
           </div>
 
@@ -69,7 +70,7 @@ export default function SupervisorProjects() {
 
   const activeGroups = allGroups.filter((g) => 
     (g.status === "APPROVED" || g.status === "COMPLETED") && 
-    g.supervisor?._id === user?._id
+    g.internalEvaluator?._id === user?._id
   );
   const filtered = activeGroups.filter(
     (g) =>
@@ -83,10 +84,10 @@ export default function SupervisorProjects() {
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-primary mb-1">Supervised Projects</p>
-          <h1 className="text-3xl font-bold tracking-tight">Your Projects</h1>
+          <p className="text-sm font-medium text-primary mb-1">Assigned Evaluations</p>
+          <h1 className="text-3xl font-bold tracking-tight">Your Evaluations</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {activeGroups.length} active project{activeGroups.length !== 1 ? "s" : ""} under your supervision.
+            {activeGroups.length} project{activeGroups.length !== 1 ? "s" : ""} assigned to you for internal evaluation.
           </p>
         </div>
         <div className="relative w-full sm:w-72">
@@ -110,11 +111,11 @@ export default function SupervisorProjects() {
       ) : activeGroups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed rounded-2xl bg-muted/10">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-5">
-            <FolderGit2 className="w-8 h-8 text-primary/40" />
+            <ClipboardCheck className="w-8 h-8 text-primary/40" />
           </div>
-          <h3 className="text-lg font-semibold">No active projects yet</h3>
+          <h3 className="text-lg font-semibold">No evaluations assigned</h3>
           <p className="text-sm text-muted-foreground mt-1.5 max-w-sm">
-            You aren't supervising any approved projects. Accept a group request from your dashboard to get started.
+            You haven't been assigned any projects for internal evaluation yet. The coordinator will assign them.
           </p>
         </div>
       ) : filtered.length === 0 ? (
@@ -138,7 +139,7 @@ export default function SupervisorProjects() {
                 {/* Top */}
                 <div className="flex items-start justify-between gap-2 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <FolderGit2 className="w-5 h-5 text-primary" />
+                    <ClipboardCheck className="w-5 h-5 text-primary" />
                   </div>
                   <Badge variant="outline" className="text-[10px] shrink-0 bg-background/60">
                     {group.projectDetails.domain}

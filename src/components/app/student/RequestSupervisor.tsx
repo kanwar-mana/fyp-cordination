@@ -28,9 +28,15 @@ export const RequestSupervisor = ({ groupId }: RequestSupervisorProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    dispatch(getSupervisors());
     dispatch(getMySentSupervisorRequests());
   }, [dispatch]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      dispatch(getSupervisors(query));
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [dispatch, query]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -42,11 +48,7 @@ export const RequestSupervisor = ({ groupId }: RequestSupervisorProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filtered = supervisors.filter(
-    (s: UserType) =>
-      s.fullName?.toLowerCase().includes(query.toLowerCase()) ||
-      s.email?.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = supervisors || [];
 
   const handleRequest = async (supervisorId: string) => {
     setRequesting(supervisorId);

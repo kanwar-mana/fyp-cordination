@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -53,12 +54,14 @@ export function AppShell({
   return (
     <div className="flex min-h-screen w-full">
       <Sidebar collapsible="icon">
-        <SidebarHeader className="flex items-center justify-between px-2 py-3">
+        <SidebarHeader className="flex items-center justify-between px-2 py-1!">
           <Link
             href="/dashboard"
             className="flex items-center gap-2 font-semibold text-base"
           >
-            <GraduationCap className="size-10 text-primary" />
+            <div className="relative w-12 h-12 rounded-md overflow-hidden flex items-center justify-center">
+              <Image src="/logo.png" alt="AcadPath Logo" fill className="object-contain" />
+            </div>
             {state === "expanded" && user?.role ? (
               <span>{roleLabelMap[user.role]}</span>
             ) : null}

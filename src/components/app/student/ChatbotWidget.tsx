@@ -95,7 +95,7 @@ export function ChatbotWidget() {
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-transform z-50 p-0"
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {isOpen ? <X className="size-6" /> : <MessageCircle className="size-6" />}
       </Button>
 
       {/* Chat Window */}
@@ -163,14 +163,14 @@ export function ChatbotWidget() {
               />
               <Button
                 size="icon"
-                className="h-9 w-9 rounded-full shrink-0"
+                className="flex items-center justify-center h-9 w-9 rounded-full shrink-0"
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
               >
                 {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Send className="w-4 h-4 ml-0.5" />
+                  <Send className="size-4" />
                 )}
               </Button>
             </div>

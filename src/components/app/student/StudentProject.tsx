@@ -15,6 +15,7 @@ import {
   UserMinus,
   ShieldQuestion,
   AlertTriangle,
+  ClipboardCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,6 +27,7 @@ import { formatDate } from "@/components/milestones/milestoneUtils";
 import { InviteMembers } from "@/components/groups/InviteMembers";
 import { RequestSupervisor } from "@/components/app/student/RequestSupervisor";
 import { removeMember, leaveGroup, deleteGroup } from "@/store/group/groupThunk";
+import { EditGroupDialog } from "@/components/groups/EditGroupDialog";
 import { checkAuth } from "@/store/auth/authThunk";
 import { useState } from "react";
 import {
@@ -154,10 +156,13 @@ export const Project = ({ group }: { group: Group }) => {
             </Badge>
           </div>
 
-          {/* Delete Group — shown for leader only when deletable */}
+          {/* Edit Group / Delete Group — shown for leader only when deletable */}
           {canDeleteGroup && (
-            <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-              <AlertDialogTrigger asChild>
+            <div className="flex items-center gap-2">
+              <EditGroupDialog group={group} />
+              
+              <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+                <AlertDialogTrigger asChild>
                 <Button
                   size="sm"
                   variant="outline"
@@ -199,7 +204,8 @@ export const Project = ({ group }: { group: Group }) => {
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
-            </AlertDialog>
+              </AlertDialog>
+            </div>
           )}
         </div>
 
@@ -252,7 +258,7 @@ export const Project = ({ group }: { group: Group }) => {
       </div>
 
       {/* ── Info cards ─────────────────────────────────────────────── */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Supervisor */}
         <InfoCard title="Supervisor" icon={<User className="w-3.5 h-3.5" />}>
           {group.supervisor ? (
@@ -262,9 +268,28 @@ export const Project = ({ group }: { group: Group }) => {
                   {initials(group.supervisor.fullName)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="text-sm font-medium leading-tight">{group.supervisor.fullName}</p>
-                <p className="text-xs text-muted-foreground">{group.supervisor.email}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-medium leading-tight truncate">{group.supervisor.fullName}</p>
+                <p className="text-xs text-muted-foreground truncate">{group.supervisor.email}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">Not assigned yet.</p>
+          )}
+        </InfoCard>
+
+        {/* Internal Evaluator */}
+        <InfoCard title="Internal Evaluator" icon={<ClipboardCheck className="w-3.5 h-3.5" />}>
+          {group.internalEvaluator ? (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                  {initials(group.internalEvaluator.fullName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="text-sm font-medium leading-tight truncate">{group.internalEvaluator.fullName}</p>
+                <p className="text-xs text-muted-foreground truncate">{group.internalEvaluator.email}</p>
               </div>
             </div>
           ) : (
