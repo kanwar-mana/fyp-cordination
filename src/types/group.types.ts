@@ -14,6 +14,13 @@ export type GroupStatus =
 
 export type MilestoneStatus = "PENDING" | "SUBMITTED" | "APPROVED" | "REJECTED";
 
+/** A file stored in Cloudinary, with all info needed to display and download it. */
+export interface CloudinaryFile {
+  cloudinaryUrl: string;
+  publicId: string;
+  originalName: string;
+}
+
 export interface ProjectDetails {
   title: string;
   description: string;
@@ -27,9 +34,9 @@ export interface Milestone {
   title: string;
   description?: string;
   deadline: string;
-  documentUrls?: string[];
+  documentFiles?: CloudinaryFile[];
   status: MilestoneStatus;
-  submissionUrls?: string[];
+  submissionFiles?: CloudinaryFile[];
   studentMessage?: string;
   remarks?: string;
   grade?: string;

@@ -17,6 +17,7 @@ import {
   getSessionLifecycle,
   getActivationState,
 } from "@/lib/session.utils";
+import { downloadCloudinaryFile } from "@/lib/utils";
 
 interface SessionDetailsModalProps {
   session: Session | null;
@@ -31,7 +32,7 @@ export default function SessionDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl! border-border/70 p-0 sm:rounded-2xl">
+      <DialogContent className="max-w-3xl!  border-border/70 p-0 sm:rounded-2xl">
         {session && (
           <>
             <div className="bg-muted/30 px-6 py-5">
@@ -45,14 +46,8 @@ export default function SessionDetailsModal({
                       {session.department || "Department not specified"}
                     </DialogDescription>
                   </div>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Badge
-                      variant={getSessionLifecycle(session).variant}
-                      className="h-6 gap-1.5"
-                    >
-                      <Flag className="size-3.5" />
-                      {getSessionLifecycle(session).label}
-                    </Badge>
+                  <div className="flex flex-wrap justify-end gap-2 mt-6">
+                    
                     <Badge
                       variant={getActivationState(session).variant}
                       className="h-6 gap-1.5"
@@ -151,24 +146,20 @@ export default function SessionDetailsModal({
                         </p>
 
                         {/* Display Multiple Uploaded Files with File Icon */}
-                        {milestone.documentUrls && milestone.documentUrls.length > 0 && (
+                        {milestone.documentFiles && milestone.documentFiles.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-3">
-                            {milestone.documentUrls.map((url, urlIndex) => {
-                              const fileName = url.split('/').pop() || 'Document';
-                              return (
-                                <a
-                                  key={urlIndex}
-                                  href={url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:underline border border-primary/20 rounded-md transition-colors"
-                                  title={fileName}
-                                >
-                                  <FileIcon className="w-3 h-3" />
-                                  <span className="max-w-[150px] truncate">{fileName}</span>
-                                </a>
-                              );
-                            })}
+                            {milestone.documentFiles.map((file, fileIndex) => (
+                              <button
+                                key={fileIndex}
+                                type="button"
+                                onClick={() => downloadCloudinaryFile(file.cloudinaryUrl, file.originalName)}
+                                className="flex items-center gap-1.5 px-2 py-1 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:underline border border-primary/20 rounded-md transition-colors cursor-pointer text-left"
+                                title={file.originalName}
+                              >
+                                <FileIcon className="w-3 h-3" />
+                                <span className="max-w-[150px] truncate">{file.originalName}</span>
+                              </button>
+                            ))}
                           </div>
                         )}
                       </div>
