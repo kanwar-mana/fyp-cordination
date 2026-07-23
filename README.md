@@ -1,5 +1,5 @@
 # FYP Coordination System
-
+[acadpath.app](https://acadpath.app/)
 A full-stack platform to streamline Final Year Project (FYP) management for students, supervisors, and evaluators.
 
 ## 🚀 Overview
@@ -37,7 +37,7 @@ It improves transparency, tracking, and communication across all stakeholders in
 ## 🧱 Tech Stack
 
 - **Frontend:** Next.js, TypeScript
-- **Backend:** Next.js API routes / full-stack architecture
+- **Backend:** Express.js, MongoDB, Node.js
 - **Language:** TypeScript (primary)
 
 > This repository is primarily TypeScript-based and follows modern Next.js full-stack patterns.
@@ -132,7 +132,7 @@ If you'd like to collaborate, feel free to open an issue or pull request.
 
 ## 📬 Contact
 
-**Author:** Kanwar Mana  
+**Author:** Kanwar Abdull Rahman & Hassan Munir  
 **GitHub:** [kanwar-mana](https://github.com/kanwar-mana)
 
 ---
