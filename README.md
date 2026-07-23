@@ -137,6 +137,3 @@ If you'd like to collaborate, feel free to open an issue or pull request.
 
 ---
 
-## 📄 License
-
-Add your preferred license here (e.g., MIT).
